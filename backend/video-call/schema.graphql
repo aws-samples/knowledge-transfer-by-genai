@@ -1,0 +1,53 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type ChimeMeeting @aws_cognito_user_pools {
+  meetingResponse: String!
+  attendeeResponse: String!
+}
+
+type MeetingMessage @aws_cognito_user_pools {
+  target: ID!
+  source: ID!
+  state: String!
+  meetingInfo: String!
+}
+
+type UserId @aws_cognito_user_pools {
+  userId: String!
+}
+
+type UserEmail @aws_cognito_user_pools {
+  userEmail: String!
+}
+
+type MeetingId @aws_cognito_user_pools {
+  meetingId: String!
+}
+
+type Query {
+  dummy: ChimeMeeting
+  getCognitoId: UserId @aws_cognito_user_pools
+  getEmailFromId(idResponse: String!): UserEmail @aws_cognito_user_pools
+}
+
+type Mutation {
+  createChimeMeeting: ChimeMeeting @aws_cognito_user_pools
+  joinMeeting(meetingResponse: String!): ChimeMeeting @aws_cognito_user_pools
+  deleteChimeMeeting(meetingId: ID!): MeetingId @aws_cognito_user_pools
+  sendMeetingMessage(
+    target: ID!
+    source: ID!
+    state: String!
+    meetingInfo: String!
+  ): MeetingMessage @aws_cognito_user_pools
+}
+
+type Subscription {
+  onMeetingMessageReceived(target: ID!): MeetingMessage
+    @aws_subscribe(mutations: ["sendMeetingMessage"])
+    @aws_cognito_user_pools
+}
