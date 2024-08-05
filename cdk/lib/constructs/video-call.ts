@@ -1,13 +1,16 @@
 import { Construct } from "constructs";
-import { CfnOutput, Duration } from "aws-cdk-lib";
+import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import { Auth } from "./auth";
 import * as appsync from "aws-cdk-lib/aws-appsync";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import * as path from "path";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export interface VideoCallProps {
   readonly auth: Auth;
+  readonly recordingBucket: s3.IBucket;
 }
 
 export class VideoCall extends Construct {
@@ -29,6 +32,8 @@ export class VideoCall extends Construct {
         environment: {
           USER_POOL_ID: props.auth.userPool.userPoolId,
           USER_POOL_REGION: props.auth.userPool.stack.region,
+          ACCOUNT_ID: Stack.of(this).account,
+          RECORDING_BUCKET_ARN: props.recordingBucket.bucketArn,
         },
       }
     );
@@ -40,17 +45,37 @@ export class VideoCall extends Construct {
           "chime:createAttendee",
           "chime:createMeeting",
           "chime:deleteMeeting",
+          "chime:CreateMediaCapturePipeline",
           "cognito-idp:ListUsers",
         ],
         resources: ["*"],
       })
     );
+    props.recordingBucket.grantReadWrite(chimeResolverFunction);
+    // chimeResolverFunction.addToRolePolicy(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     actions: ["chime:CreateMediaCapturePipeline"],
+    //     resources: [
+    //       `arn:aws:chime:${Stack.of(this).region}:${
+    //         Stack.of(this).account
+    //       }:media-pipeline/*`,
+    //     ],
+    //   })
+    // );
+
+    new iam.CfnServiceLinkedRole(this, "ChimeSDKMediaPipelineRole", {
+      awsServiceName: "mediapipelines.chime.amazonaws.com",
+      description: "Service-linked role for Amazon Chime SDK Media Pipelines",
+    });
 
     const api = new appsync.GraphqlApi(this, "Api", {
       name: "Api",
-      schema: appsync.SchemaFile.fromAsset(
-        path.join(__dirname, "../../../backend/video-call/schema.graphql")
-      ),
+      definition: {
+        schema: appsync.SchemaFile.fromAsset(
+          path.join(__dirname, "../../../backend/video-call/schema.graphql")
+        ),
+      },
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: appsync.AuthorizationType.USER_POOL,

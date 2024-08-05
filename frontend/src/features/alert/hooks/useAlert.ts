@@ -11,6 +11,7 @@ const useAlert = () => {
       status: "OPEN",
       severity: "CRITICAL",
       comment: "",
+      meetingIds: [],
     },
     {
       id: "2",
@@ -21,6 +22,7 @@ const useAlert = () => {
       status: "CLOSED",
       severity: "HIGH",
       comment: "This is a comment",
+      meetingIds: [],
     },
     {
       id: "3",
@@ -31,6 +33,7 @@ const useAlert = () => {
       status: "OPEN",
       severity: "MEDIUM",
       comment: "",
+      meetingIds: [],
     },
     {
       id: "4",
@@ -41,10 +44,12 @@ const useAlert = () => {
       status: "CLOSED",
       severity: "LOW",
       comment: "This is a comment",
+      meetingIds: [],
     },
   ];
 
   const updateAlert = (alert: Alert) => {
+    console.log(`Updating alert ${alert.id}`);
     return;
   };
 

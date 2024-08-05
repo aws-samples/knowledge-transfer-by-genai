@@ -12,6 +12,7 @@ type Props = {
 };
 
 function ChimeDialogProvider(props: Props) {
+  // Thin wrapper component to provide the ChimeDialog and ChimeCallDialog components
   return (
     <ThemeProvider theme={lightTheme}>
       <GlobalStyles />

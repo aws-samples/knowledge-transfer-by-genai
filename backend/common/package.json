@@ -1,0 +1,25 @@
+{
+  "name": "@industrial-knowledge-transfer-by-genai/common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.1.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.623.0",
+    "@aws-sdk/lib-dynamodb": "^3.623.0",
+    "typescript": "^5.5.4"
+  }
+}

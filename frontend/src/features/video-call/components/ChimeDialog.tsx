@@ -24,7 +24,7 @@ import {
   useToggleLocalMute,
   VideoTileGrid,
 } from "amazon-chime-sdk-component-library-react";
-import { OnMeetingMessageReceivedSubscription } from "@/API";
+import { OnMeetingMessageReceivedSubscription } from "@/features/video-call/graphql-api";
 
 type Props = {
   myId: string;

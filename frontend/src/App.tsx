@@ -32,14 +32,6 @@ Amplify.configure({
   },
 });
 
-// function App() {
-//   return (
-//     <>
-//       <RouterProvider router={router} />;
-//     </>
-//   );
-// }
-
 function App() {
   const { t } = useTranslation();
   return (

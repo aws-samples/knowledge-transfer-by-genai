@@ -5,6 +5,9 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { v4 } from "uuid";
 import { AppSyncResolverHandler } from "aws-lambda";
+import { startCapture } from "./lib/record";
+
+const { RECORDING_BUCKET_ARN, ACCOUNT_ID } = process.env;
 
 type EmptyArgument = {};
 
@@ -95,6 +98,15 @@ const createChimeMeeting = async (): Promise<CreateChimeMeetingResult> => {
   if (meetingResponse?.Meeting?.MeetingId == null) {
     throw Error("empty MeetingId!");
   }
+
+  // Start recording
+  const captureDestination = `${RECORDING_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
+  const startCaptureResponse = await startCapture({
+    meetingId: meetingResponse.Meeting.MeetingId,
+    destination: captureDestination,
+    accountId: ACCOUNT_ID!,
+  });
+  console.log(`startCaptureResponse: ${JSON.stringify(startCaptureResponse)}`);
 
   return await joinMeeting({
     meetingResponse: JSON.stringify(meetingResponse),

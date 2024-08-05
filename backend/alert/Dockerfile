@@ -1,0 +1,27 @@
+FROM public.ecr.aws/docker/library/node:21-bullseye-slim as builder
+
+WORKDIR /app
+COPY . .
+
+WORKDIR /app/alert
+RUN npm i && npm run build
+
+FROM public.ecr.aws/docker/library/node:21-bullseye-slim as runner
+
+# Install lambda web adapter
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
+
+# Note that the lambda web adapter is listening on port 8080 by default
+# Ref: https://github.com/awslabs/aws-lambda-web-adapter#usage
+ENV PORT=8080 NODE_ENV=production
+ENV AWS_LWA_ENABLE_COMPRESSION=true
+
+WORKDIR ${LAMBDA_TASK_ROOT}
+COPY --from=builder /app/common ./common
+COPY --from=builder /app/alert/package.json ./package.json
+COPY --from=builder /app/alert/dist ./dist
+COPY --from=builder /app/alert/node_modules ./node_modules
+
+EXPOSE 3000
+CMD ["npm", "run", "start:prod"]
+
