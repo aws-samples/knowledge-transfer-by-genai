@@ -1,7 +1,17 @@
-import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import {
+  Link,
+  Outlet,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { AuthUser } from "aws-amplify/auth";
 
-export const Route = createRootRoute({
+interface RouterContext {
+  signOut: () => void;
+  user: AuthUser | undefined;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   notFoundComponent: () => {
     return (

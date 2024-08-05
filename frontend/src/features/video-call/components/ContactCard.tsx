@@ -85,9 +85,6 @@ function ContactCard() {
               >
                 <span className="flex-1 overflow-hidden text-ellipsis text-left">
                   せんたく...
-                  {/* {assignees.find(
-                    (person) => callees[0] && person.id === callees[0].id
-                  )?.name || "Select..."} */}
                 </span>
                 <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -100,29 +97,11 @@ function ContactCard() {
                       test
                     </span>
                   </CommandItem>
-                  {/* {assignees.map((person) => (
-                    <CommandItem
-                      key={person.id}
-                      value={person.id}
-                      onSelect={() => {
-                        setCallees([person]);
-                        setOpenMenu(false);
-                      }}
-                    >
-                      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                        {person.name}
-                      </span>
-                    </CommandItem>
-                  ))} */}
                 </CommandGroup>
               </Command>
             </PopoverContent>
           </Popover>
-          <Button
-            variant="default"
-            onClick={onClickCall}
-            disabled={isOpenChime || callees.length === 0}
-          >
+          <Button variant="default" onClick={() => {}}>
             通話する
           </Button>
         </div>

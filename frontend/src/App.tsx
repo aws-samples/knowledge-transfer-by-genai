@@ -5,7 +5,10 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { useTranslation } from "react-i18next";
 
-const router = createRouter({ routeTree: routeTree });
+const router = createRouter({
+  routeTree: routeTree,
+  context: { signOut: () => {}, user: undefined },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -51,8 +54,8 @@ function App() {
     >
       {({ signOut, user }) => (
         <>
-          <RouterProvider router={router} />;
-          <ChimeDialogProvider myId={user?.username ?? ""} />
+          <RouterProvider router={router} context={{ signOut, user }} />;
+          {/* <ChimeDialogProvider myId={user?.username ?? ""} /> */}
         </>
       )}
     </Authenticator>
