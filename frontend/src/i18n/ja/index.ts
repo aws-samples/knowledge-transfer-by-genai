@@ -16,6 +16,11 @@ const translation = {
         severity: "重要度",
       },
     },
+    alertDetail: {
+      contactCard: {
+        selectContact: "選択...",
+      },
+    },
   },
 };
 export default translation;

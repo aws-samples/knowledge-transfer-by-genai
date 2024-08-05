@@ -12,6 +12,7 @@ import useChime from "@/features/video-call/hooks/useChime";
 import { generateClient } from "aws-amplify/api";
 import { getCognitoId } from "@/features/video-call/graphql/queries";
 import { getCurrentUser } from "aws-amplify/auth";
+import { useTranslation } from "react-i18next";
 
 type User = {
   id: string;
@@ -24,6 +25,7 @@ function ContactCard() {
   const [callees, setCallees] = useState<User[]>([]);
   const [assignees, setAssignees] = useState<User[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const { t } = useTranslation();
 
   const onClickCall = () => {
     setAttendees(callees);
@@ -84,7 +86,9 @@ function ContactCard() {
                 className="w-full md:w-[280px]"
               >
                 <span className="flex-1 overflow-hidden text-ellipsis text-left">
-                  せんたく...
+                  {assignees.find(
+                    (person) => callees[0] && person.id === callees[0].id
+                  )?.name || t("alertDetail.contactCard.selectContact")}
                 </span>
                 <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -92,16 +96,29 @@ function ContactCard() {
             <PopoverContent className="w-[200px] p-0 md:w-[280px]">
               <Command>
                 <CommandGroup className="w-[200px] md:w-[280px]">
-                  <CommandItem value="test" onSelect={() => {}}>
-                    <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                      test
-                    </span>
-                  </CommandItem>
+                  {assignees.map((person) => (
+                    <CommandItem
+                      key={person.id}
+                      value={person.id}
+                      onSelect={() => {
+                        setCallees([person]);
+                        setOpenMenu(false);
+                      }}
+                    >
+                      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {person.name}
+                      </span>
+                    </CommandItem>
+                  ))}
                 </CommandGroup>
               </Command>
             </PopoverContent>
           </Popover>
-          <Button variant="default" onClick={() => {}}>
+          <Button
+            variant="default"
+            onClick={onClickCall}
+            disabled={isOpenChime || callees.length === 0}
+          >
             通話する
           </Button>
         </div>

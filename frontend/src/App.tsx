@@ -55,7 +55,7 @@ function App() {
       {({ signOut, user }) => (
         <>
           <RouterProvider router={router} context={{ signOut, user }} />;
-          {/* <ChimeDialogProvider myId={user?.username ?? ""} /> */}
+          <ChimeDialogProvider myId={user?.username ?? ""} />
         </>
       )}
     </Authenticator>
