@@ -32,6 +32,7 @@ export type UserEmail = {
 };
 
 export type CreateChimeMeetingMutationVariables = {
+  alertId?: string | null,
 };
 
 export type CreateChimeMeetingMutation = {

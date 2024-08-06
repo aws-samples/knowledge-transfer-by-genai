@@ -43,6 +43,8 @@ export class Alert extends Construct {
       memorySize: 1024,
       timeout: Duration.minutes(1),
       environment: {
+        ACCOUNT_ID: Stack.of(this).account,
+        REGION: Stack.of(this).region,
         ALERT_TABLE_NAME: database.alertTable.tableName,
       },
     });

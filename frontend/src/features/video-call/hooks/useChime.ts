@@ -13,7 +13,7 @@ import { onMeetingMessageReceived } from "@/features/video-call/graphql/subscrip
 export type Attendee = { id: string; name: string };
 
 export type SendMessageParams = {
-  myId: string;
+  myName: string;
   targetId: string;
   state: "MEETING_START" | "MEETING_END";
   meetingInfo: string;
@@ -94,7 +94,7 @@ const useChime = () => {
 
   // 会議参加通知や会議終了通知を送信する
   const sendMessage = async ({
-    myId,
+    myName,
     targetId,
     state,
     meetingInfo,
@@ -102,7 +102,7 @@ const useChime = () => {
     await client.graphql({
       query: sendMeetingMessage,
       variables: {
-        source: myId,
+        source: myName,
         target: targetId,
         state,
         meetingInfo,
@@ -114,14 +114,14 @@ const useChime = () => {
   // 会議参加通知や会議終了通知を受け取る
   // 受け取ったサブスクライバーは unsubscribe でリリースする
   const subscribeMessage = (
-    myId: string,
+    myName: string,
     callback: (data: OnMeetingMessageReceivedSubscription) => void
   ) => {
     const subscriber = client
       .graphql({
         query: onMeetingMessageReceived,
         variables: {
-          target: myId,
+          target: myName,
         },
         authMode: "userPool",
       })
@@ -133,9 +133,12 @@ const useChime = () => {
   };
 
   // 会議の作成・参加を開始する
-  const createAndJoin = async (): Promise<MeetingResponse> => {
+  const createAndJoin = async (alertId: string): Promise<MeetingResponse> => {
     const meetingCreated = await client.graphql({
       query: createChimeMeeting,
+      variables: {
+        alertId,
+      },
       authMode: "userPool",
     });
     const meeting = JSON.parse(

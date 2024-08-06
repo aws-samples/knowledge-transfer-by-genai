@@ -8,8 +8,8 @@ type GeneratedMutation<InputType, OutputType> = string & {
   __generatedMutationOutput: OutputType;
 };
 
-export const createChimeMeeting = /* GraphQL */ `mutation CreateChimeMeeting {
-  createChimeMeeting {
+export const createChimeMeeting = /* GraphQL */ `mutation CreateChimeMeeting($alertId: ID) {
+  createChimeMeeting(alertId: $alertId) {
     meetingResponse
     attendeeResponse
     __typename

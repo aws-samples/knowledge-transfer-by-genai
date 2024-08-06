@@ -4,21 +4,22 @@ import {
   lightTheme,
   GlobalStyles,
 } from "amazon-chime-sdk-component-library-react";
-import ChimeDialog from "@/features/video-call/components/ChimeDialog";
-import ChimeCallDialog from "@/features/video-call/components/ChimeCallDialog";
+import ChimeCalleeDialog from "@/features/video-call/components/ChimeCalleeDialog";
 
 type Props = {
-  myId: string;
+  myName: string;
+  children?: React.ReactNode;
 };
 
 function ChimeDialogProvider(props: Props) {
-  // Thin wrapper component to provide the ChimeDialog and ChimeCallDialog components
+  const { children } = props;
+  // Thin wrapper component to provide the ChimeDialog and ChimeCalleeDialog components
   return (
     <ThemeProvider theme={lightTheme}>
       <GlobalStyles />
       <MeetingProvider>
-        <ChimeDialog myId={props?.myId ?? ""} />
-        <ChimeCallDialog myId={props?.myId ?? ""} />
+        <ChimeCalleeDialog myName={props?.myName ?? ""} />
+        {children}
       </MeetingProvider>
     </ThemeProvider>
   );

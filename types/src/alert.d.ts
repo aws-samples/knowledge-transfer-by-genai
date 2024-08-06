@@ -1,5 +1,8 @@
 export type Status = "OPEN" | "CLOSED";
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+export type Meeting = {
+  id: string;
+};
 export type Alert = {
   id: string;
   name: string;
@@ -9,5 +12,5 @@ export type Alert = {
   status: Status;
   severity: Severity;
   comment: string;
-  meetingIds: string[];
+  meetings: Meeting[];
 };

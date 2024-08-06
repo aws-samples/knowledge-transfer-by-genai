@@ -46,7 +46,7 @@ export class AppService {
         Math.floor(Math.random() * 4)
       ] as Severity,
       comment: "",
-      meetingIds: [],
+      meetings: [],
     };
     return await createAlert(alert);
   }

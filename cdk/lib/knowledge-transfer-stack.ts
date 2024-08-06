@@ -5,7 +5,10 @@ import { Auth } from "./constructs/auth";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Alert } from "./constructs/alert";
 import { Database } from "./constructs/database";
+import * as events from "aws-cdk-lib/aws-events";
 import * as iam from "aws-cdk-lib/aws-iam";
+import { Transcribe } from "./constructs/transcribe";
+import { VideoConcat } from "./constructs/video-concat";
 
 export class KnowledgeTransferStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -30,6 +33,18 @@ export class KnowledgeTransferStack extends cdk.Stack {
       serverAccessLogsBucket: accessLogBucket,
       serverAccessLogsPrefix: "RecordingBucket",
     });
+
+    const transcribeBucket = new s3.Bucket(this, "TranscribeBucket", {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+      serverAccessLogsBucket: accessLogBucket,
+      serverAccessLogsPrefix: "TranscribeBucket",
+    });
+
     // Need to allow access from mediapipelines.chime.amazonaws.com
     const bucketPolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
@@ -39,21 +54,30 @@ export class KnowledgeTransferStack extends cdk.Stack {
       ],
       resources: [recordingBucket.bucketArn, `${recordingBucket.bucketArn}/*`],
     });
-
-    // バケットポリシーにステートメントを追加
     recordingBucket.addToResourcePolicy(bucketPolicyStatement);
 
     const auth = new Auth(this, "Auth");
+    const database = new Database(this, "Database");
+
     new VideoCall(this, "VideoCall", {
       auth,
       recordingBucket,
+      database,
     });
-
-    const database = new Database(this, "Database");
 
     const alert = new Alert(this, "Alert", {
       auth,
       database,
     });
+
+    const videoConcat = new VideoConcat(this, "VideoConcat", {
+      recordingBucket,
+      database,
+    });
+
+    // const transcribe = new Transcribe(this, "Transcribe", {
+    //   recordingBucket,
+    //   transcribeBucket,
+    // });
   }
 }

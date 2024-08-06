@@ -35,7 +35,7 @@ type Query {
 }
 
 type Mutation {
-  createChimeMeeting: ChimeMeeting @aws_cognito_user_pools
+  createChimeMeeting(alertId: ID): ChimeMeeting @aws_cognito_user_pools
   joinMeeting(meetingResponse: String!): ChimeMeeting @aws_cognito_user_pools
   deleteChimeMeeting(meetingId: ID!): MeetingId @aws_cognito_user_pools
   sendMeetingMessage(

@@ -10,10 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@industrial-knowledge-transfer-by-genai/common": "file:../common",
     "@aws-sdk/client-chime-sdk-media-pipelines": "^3.623.0",
     "@aws-sdk/client-chime-sdk-meetings": "^3.533.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.549.0",
-    "@industrial-knowledge-transfer-by-genai/common": "file: ../common",
+    "amazon-chime-sdk-js": "^3.23.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

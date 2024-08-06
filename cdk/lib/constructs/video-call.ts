@@ -7,10 +7,12 @@ import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import * as path from "path";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
+import { Database } from "./database";
 
 export interface VideoCallProps {
   readonly auth: Auth;
   readonly recordingBucket: s3.IBucket;
+  readonly database: Database;
 }
 
 export class VideoCall extends Construct {
@@ -30,10 +32,12 @@ export class VideoCall extends Construct {
           "../../../backend/video-call/package-lock.json"
         ),
         environment: {
+          ACCOUNT_ID: Stack.of(this).account,
+          REGION: Stack.of(this).region,
           USER_POOL_ID: props.auth.userPool.userPoolId,
           USER_POOL_REGION: props.auth.userPool.stack.region,
-          ACCOUNT_ID: Stack.of(this).account,
           RECORDING_BUCKET_ARN: props.recordingBucket.bucketArn,
+          ALERT_TABLE_NAME: props.database.alertTable.tableName,
         },
       }
     );
@@ -46,12 +50,15 @@ export class VideoCall extends Construct {
           "chime:createMeeting",
           "chime:deleteMeeting",
           "chime:CreateMediaCapturePipeline",
+          "chime:StartMeetingTranscription",
           "cognito-idp:ListUsers",
         ],
         resources: ["*"],
       })
     );
     props.recordingBucket.grantReadWrite(chimeResolverFunction);
+    props.database.alertTable.grantReadWriteData(chimeResolverFunction);
+
     // chimeResolverFunction.addToRolePolicy(
     //   new PolicyStatement({
     //     effect: Effect.ALLOW,
@@ -67,6 +74,10 @@ export class VideoCall extends Construct {
     new iam.CfnServiceLinkedRole(this, "ChimeSDKMediaPipelineRole", {
       awsServiceName: "mediapipelines.chime.amazonaws.com",
       description: "Service-linked role for Amazon Chime SDK Media Pipelines",
+    });
+    new iam.CfnServiceLinkedRole(this, "ChimeSDKTranscriptionRole", {
+      awsServiceName: "transcription.chime.amazonaws.com",
+      description: "Service-linked role for Amazon Chime Transcription",
     });
 
     const api = new appsync.GraphqlApi(this, "Api", {

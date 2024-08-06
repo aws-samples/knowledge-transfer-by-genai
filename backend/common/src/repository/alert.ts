@@ -82,6 +82,27 @@ export const updateAlertStatus = async (
   );
 };
 
+export const appendMeetingToAlert = async (
+  alertId: string,
+  meetingId: string
+): Promise<void> => {
+  const meetingSet = new Set([meetingId]);
+
+  await dynamoDbDocument.send(
+    new UpdateCommand({
+      TableName: ALERT_TABLE_NAME,
+      Key: { id: alertId },
+      UpdateExpression: "ADD #meetings :meeting",
+      ExpressionAttributeNames: {
+        "#meetings": "meetings",
+      },
+      ExpressionAttributeValues: {
+        ":meeting": meetingSet,
+      },
+    })
+  );
+};
+
 // export const updateAlert = async (
 //   alertId: string,
 //   updatedFields: Partial<Alert>

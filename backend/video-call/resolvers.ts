@@ -6,10 +6,16 @@ import {
 import { v4 } from "uuid";
 import { AppSyncResolverHandler } from "aws-lambda";
 import { startCapture } from "./lib/record";
+import { startTranscribe } from "./lib/transcribe";
+import { appendMeetingToAlert } from "@industrial-knowledge-transfer-by-genai/common";
 
 const { RECORDING_BUCKET_ARN, ACCOUNT_ID } = process.env;
 
 type EmptyArgument = {};
+
+type CreateChimeMeetingArgument = {
+  alertId: string;
+};
 
 type JoinMeetingArgument = {
   meetingResponse: string;
@@ -50,6 +56,7 @@ type Result =
   | JoinMeetingResult
   | DeleteChimeMeetingResult;
 type Argument =
+  | CreateChimeMeetingArgument
   | EmptyArgument
   | JoinMeetingArgument
   | DeleteChimeMeetingArgument;
@@ -71,7 +78,9 @@ export const handler: AppSyncResolverHandler<Argument, Result> = async (
   console.log(event);
   switch (event.info.fieldName) {
     case "createChimeMeeting":
-      return await createChimeMeeting();
+      return await createChimeMeeting(
+        event.arguments as CreateChimeMeetingArgument
+      );
     case "joinMeeting":
       return await joinMeeting(event.arguments as JoinMeetingArgument);
     case "getCognitoId":
@@ -87,7 +96,9 @@ export const handler: AppSyncResolverHandler<Argument, Result> = async (
   }
 };
 
-const createChimeMeeting = async (): Promise<CreateChimeMeetingResult> => {
+const createChimeMeeting = async (
+  request: CreateChimeMeetingArgument
+): Promise<CreateChimeMeetingResult> => {
   const meetingResponse = await chimeSDKMeetings.createMeeting({
     ClientRequestToken: v4(),
     MediaRegion: "ap-northeast-1",
@@ -99,6 +110,14 @@ const createChimeMeeting = async (): Promise<CreateChimeMeetingResult> => {
     throw Error("empty MeetingId!");
   }
 
+  console.debug(`meetingResponse: ${JSON.stringify(meetingResponse)}`);
+
+  // Store dynamodb
+  await appendMeetingToAlert(
+    request.alertId,
+    meetingResponse.Meeting.MeetingId
+  );
+
   // Start recording
   const captureDestination = `${RECORDING_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
   const startCaptureResponse = await startCapture({
@@ -106,7 +125,17 @@ const createChimeMeeting = async (): Promise<CreateChimeMeetingResult> => {
     destination: captureDestination,
     accountId: ACCOUNT_ID!,
   });
-  console.log(`startCaptureResponse: ${JSON.stringify(startCaptureResponse)}`);
+  console.debug(
+    `startCaptureResponse: ${JSON.stringify(startCaptureResponse)}`
+  );
+
+  // // Start transcription
+  // const startTranscribeResponse = await startTranscribe(
+  //   meetingResponse.Meeting.MeetingId
+  // );
+  // console.debug(
+  //   `startTranscribeResponse: ${JSON.stringify(startTranscribeResponse)}`
+  // );
 
   return await joinMeeting({
     meetingResponse: JSON.stringify(meetingResponse),

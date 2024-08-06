@@ -27,7 +27,8 @@ import {
 import { OnMeetingMessageReceivedSubscription } from "@/features/video-call/graphql-api";
 
 type Props = {
-  myId: string;
+  myName: string;
+  alertId: string;
 };
 
 function ChimeDialog(props: Props) {
@@ -52,17 +53,17 @@ function ChimeDialog(props: Props) {
   const { toggleVideo, isVideoEnabled } = useLocalVideo();
   const { toggleMute, muted } = useToggleLocalMute();
 
-  const { myId } = props;
+  const { myName, alertId } = props;
 
   // 会議の終了通知を受け取る
   useEffect(() => {
-    if (myId) {
-      const subscriber = subscribeMessage(myId, receiveMessage);
+    if (myName) {
+      const subscriber = subscribeMessage(myName, receiveMessage);
       return () => {
         subscriber.unsubscribe();
       };
     }
-  }, [myId]);
+  }, [myName]);
 
   // 参加者が登録されたら会議を開始または参加する
   useEffect(() => {
@@ -96,7 +97,7 @@ function ChimeDialog(props: Props) {
     disconnect();
     // 会議終了を他の参加者に通知する
     sendMessage({
-      myId,
+      myName,
       targetId: attendees[0].id,
       state: "MEETING_END",
       meetingInfo: JSON.stringify(meetingInfo),
@@ -108,7 +109,7 @@ function ChimeDialog(props: Props) {
   const initiateMeeting = async (): Promise<void> => {
     if (!meetingInfo) {
       // 会議の作成・参加を開始する
-      const { meeting, attendee } = await createAndJoin();
+      const { meeting, attendee } = await createAndJoin(alertId);
       const meetingSessionConfiguration = new MeetingSessionConfiguration(
         meeting,
         attendee
@@ -119,7 +120,7 @@ function ChimeDialog(props: Props) {
 
       // 他の参加者に会議を通知する
       sendMessage({
-        myId,
+        myName,
         targetId: attendees[0].id,
         state: "MEETING_START",
         meetingInfo: JSON.stringify(meeting),

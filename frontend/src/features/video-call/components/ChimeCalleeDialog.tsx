@@ -13,10 +13,13 @@ import useChime, { Attendee } from "@/features/video-call/hooks/useChime";
 import { OnMeetingMessageReceivedSubscription } from "@/features/video-call/graphql-api";
 
 type Props = {
-  myId: string;
+  myName: string;
 };
 
-function ChimeCallDialog(props: Props) {
+function ChimeCalleeDialog(props: Props) {
+  /**
+   * Callee dialog component
+   */
   const {
     open: openChime,
     isOpenRing,
@@ -33,17 +36,17 @@ function ChimeCallDialog(props: Props) {
   // setAttendees でグローバルステートに保存すると ChimeDialog で join が実行され会議参加が開始するため、attendee の一時的なストア先として利用
   const [caller, setCaller] = useState<Attendee | null>(null);
 
-  const { myId } = props;
+  const { myName } = props;
 
   // 会議の開始・終了通知を受け取る
   useEffect(() => {
-    if (myId) {
-      const subscriber = subscribeMessage(myId, receiveMessage);
+    if (myName) {
+      const subscriber = subscribeMessage(myName, receiveMessage);
       return () => {
         subscriber.unsubscribe();
       };
     }
-  }, [myId]);
+  }, [myName]);
 
   const onClickCallOn = () => {
     setAttendees([caller!]);
@@ -54,7 +57,7 @@ function ChimeCallDialog(props: Props) {
   const onClickCallOff = () => {
     // 会議招集を拒否したことを通知する
     sendMessage({
-      myId,
+      myName,
       targetId: caller!.id,
       state: "MEETING_END",
       meetingInfo: JSON.stringify(meetingInfo),
@@ -116,4 +119,4 @@ function ChimeCallDialog(props: Props) {
     </Dialog>
   );
 }
-export default ChimeCallDialog;
+export default ChimeCalleeDialog;

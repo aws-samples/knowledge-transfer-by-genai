@@ -11,7 +11,7 @@ const useAlert = () => {
       status: "OPEN",
       severity: "CRITICAL",
       comment: "",
-      meetingIds: [],
+      meetings: [],
     },
     {
       id: "2",
@@ -22,7 +22,7 @@ const useAlert = () => {
       status: "CLOSED",
       severity: "HIGH",
       comment: "This is a comment",
-      meetingIds: [],
+      meetings: [],
     },
     {
       id: "3",
@@ -33,7 +33,7 @@ const useAlert = () => {
       status: "OPEN",
       severity: "MEDIUM",
       comment: "",
-      meetingIds: [],
+      meetings: [],
     },
     {
       id: "4",
@@ -44,7 +44,7 @@ const useAlert = () => {
       status: "CLOSED",
       severity: "LOW",
       comment: "This is a comment",
-      meetingIds: [],
+      meetings: [],
     },
   ];
 
