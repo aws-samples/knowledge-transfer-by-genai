@@ -14,10 +14,17 @@ import {
   LuMicOff,
   LuVideo,
   LuVideoOff,
-  //  LuPhone,
+  // LuPhone,
   LuPhoneOff,
 } from "react-icons/lu";
-import { MeetingSessionConfiguration } from "amazon-chime-sdk-js";
+import { TbBlur, TbBluerOff } from "react-icons/tb";
+import {
+  DefaultDeviceController,
+  MeetingSessionConfiguration,
+  ConsoleLogger,
+  LogLevel,
+  BackgroundBlurVideoFrameProcessor,
+} from "amazon-chime-sdk-js";
 import {
   useMeetingManager,
   useLocalVideo,
@@ -32,7 +39,7 @@ type Props = {
 };
 
 function ChimeDialog(props: Props) {
-  // ダイアログの状態は useChime hook でグローバルに管理
+  // Note: Dialog modal state is managed globally by useChime hook
   const {
     open,
     isOpen,
@@ -48,6 +55,7 @@ function ChimeDialog(props: Props) {
   } = useChime();
 
   const [minimize, setMinimize] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(false);
 
   const meetingManager = useMeetingManager();
   const { toggleVideo, isVideoEnabled } = useLocalVideo();
@@ -55,7 +63,7 @@ function ChimeDialog(props: Props) {
 
   const { myName, alertId } = props;
 
-  // 会議の終了通知を受け取る
+  // Receive meeting end notification
   useEffect(() => {
     if (myName) {
       const subscriber = subscribeMessage(myName, receiveMessage);
@@ -65,9 +73,8 @@ function ChimeDialog(props: Props) {
     }
   }, [myName]);
 
-  // 参加者が登録されたら会議を開始または参加する
+  // When attendees are registered, start or join the meeting
   useEffect(() => {
-    //TODO: add new attendee to chime meeting
     if (attendees.length > 0) {
       initiateMeeting();
     }
@@ -79,12 +86,27 @@ function ChimeDialog(props: Props) {
     }
   }, [isOpen]);
 
-  // ダイアログ外をクリックしてもダイアログを閉じないようにする
+  // // Initialize video input device
+  // useEffect(() => {
+  //   const initializeVideoInput = async () => {
+  //     const logger = new ConsoleLogger("MyLogger", LogLevel.INFO);
+  //     const deviceController = new DefaultDeviceController(logger);
+  //     const videoInputDevices = await deviceController.listVideoInputDevices();
+  //     if (videoInputDevices.length > 0) {
+  //       const videoInputDevice = videoInputDevices[0].deviceId;
+  //       await meetingManager.startAudioInputDevice(videoInputDevice);
+  //     }
+  //   };
+
+  //   initializeVideoInput();
+  // }, [meetingManager]);
+
+  // Make sure the dialog does not close when you click outside the dialog
   const onInteractOutside = (e: Event) => {
     e.preventDefault();
   };
 
-  // dialog-expandable で Close ボタンを削除したため、このメソッドは呼ばれることはない
+  // This method is deprecated because the Close button has been removed from dialog-expandable
   const onOpenChange = (isopen: boolean) => {
     if (isopen) {
       open();
@@ -95,7 +117,7 @@ function ChimeDialog(props: Props) {
 
   const onClickEndCall = async () => {
     disconnect();
-    // 会議終了を他の参加者に通知する
+    // Notify other participants that the meeting has ended
     sendMessage({
       myName,
       targetId: attendees[0].id,
@@ -141,6 +163,22 @@ function ChimeDialog(props: Props) {
   const receiveMessage = (response: OnMeetingMessageReceivedSubscription) => {
     if (response.onMeetingMessageReceived?.state === "MEETING_END") {
       close();
+    }
+  };
+
+  const toggleBlur = async () => {
+    const logger = new ConsoleLogger("Logger", LogLevel.INFO);
+    const deviceController = new DefaultDeviceController(logger);
+    const videoInputDevices = await deviceController.listVideoInputDevices();
+    if (videoInputDevices.length > 0) {
+      const videoInputDevice = videoInputDevices[0].deviceId;
+
+      if (isBlurred) {
+        await meetingManager.startAudioInputDevice(null);
+      } else {
+        await meetingManager.startAudioInputDevice(videoInputDevice);
+      }
+      setIsBlurred(!isBlurred);
     }
   };
 
@@ -197,6 +235,14 @@ function ChimeDialog(props: Props) {
               onClick={onClickEndCall}
             >
               <LuPhoneOff size="20" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 rounded-full bg-white text-black"
+              onClick={toggleBlur}
+            >
+              {isBlurred ? <TbBluerOff size="20" /> : <TbBlur size="20" />}
             </Button>
           </div>
         </DialogFooter>

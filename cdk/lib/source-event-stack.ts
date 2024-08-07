@@ -31,12 +31,15 @@ export class SourceEventStack extends cdk.Stack {
     });
 
     const eventRule = new events.Rule(this, "CrossRegionEventRule", {
+      // eventPattern: {
+      //   source: ["aws.chime"],
+      //   detailType: ["Chime Meeting State Change"],
+      //   detail: {
+      //     eventType: ["chime:MeetingEnded"],
+      //   },
+      // },
       eventPattern: {
         source: ["aws.chime"],
-        detailType: ["Chime Meeting State Change"],
-        detail: {
-          eventType: ["chime:MeetingEnded"],
-        },
       },
       targets: [
         new targets.EventBus(

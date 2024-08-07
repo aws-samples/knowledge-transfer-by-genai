@@ -9,6 +9,7 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { Transcribe } from "./constructs/transcribe";
 import { VideoConcat } from "./constructs/video-concat";
+import { VideoSummaryGenerator } from "./constructs/video-summary-generator";
 
 export class KnowledgeTransferStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -23,6 +24,17 @@ export class KnowledgeTransferStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
+    const knowledgeBucket = new s3.Bucket(this, "KnowledgeBucket", {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+      serverAccessLogsBucket: accessLogBucket,
+      serverAccessLogsPrefix: "KnowledgeBucket",
+    });
+
     const recordingBucket = new s3.Bucket(this, "RecordingBucket", {
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -32,6 +44,17 @@ export class KnowledgeTransferStack extends cdk.Stack {
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
       serverAccessLogsPrefix: "RecordingBucket",
+    });
+
+    const transcriptionBucket = new s3.Bucket(this, "TranscriptionBucket", {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+      serverAccessLogsBucket: accessLogBucket,
+      serverAccessLogsPrefix: "TranscriptionBucket",
     });
 
     const concatenatedBucket = new s3.Bucket(this, "ConcatenatedBucket", {
@@ -85,19 +108,28 @@ export class KnowledgeTransferStack extends cdk.Stack {
       database,
     });
 
+    // Alert Apis
     const alert = new Alert(this, "Alert", {
       auth,
       database,
     });
 
-    // const videoConcat = new VideoConcat(this, "VideoConcat", {
-    //   concatenatedBucket,
-    //   database,
-    // });
+    // Video summarizer
+    const videoSummaryGenerator = new VideoSummaryGenerator(
+      this,
+      "VideoSummaryGenerator",
+      {
+        concatenatedBucket,
+        knowledgeBucket,
+        transcriptionBucket,
+      }
+    );
 
-    // const transcribe = new Transcribe(this, "Transcribe", {
-    //   recordingBucket,
-    //   transcribeBucket,
-    // });
+    // Test
+    // TODO: Remove this
+    const videoConcat = new VideoConcat(this, "VideoConcat", {
+      concatenatedBucket,
+      database,
+    });
   }
 }

@@ -45,20 +45,18 @@ export class VideoConcat extends Construct {
     props.concatenatedBucket.grantReadWrite(concatTriggerFunction);
     props.database.alertTable.grantReadWriteData(concatTriggerFunction);
     props.database.meetingTable.grantReadWriteData(concatTriggerFunction);
-    s3.Bucket.fromBucketArn(
-      this,
-      "TestUs1Bucket",
-      "arn:aws:s3:::tksuzuki-us-east-1"
-    ).grantReadWrite(concatTriggerFunction);
 
     const rule = new events.Rule(this, "ChimeMeetingDeleteRule", {
       eventPattern: {
         source: ["aws.chime"],
-        detailType: ["Chime Meeting State Change"],
-        detail: {
-          eventType: ["chime:MeetingEnded"],
-        },
       },
+      // eventPattern: {
+      //   source: ["aws.chime"],
+      //   detailType: ["Chime Meeting State Change"],
+      //   detail: {
+      //     eventType: ["chime:MeetingEnded"],
+      //   },
+      // },
     });
 
     rule.addTarget(new targets.LambdaFunction(concatTriggerFunction));

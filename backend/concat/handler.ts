@@ -7,7 +7,7 @@ import { findMeetingById } from "@industrial-knowledge-transfer-by-genai/common"
 const { CONCATENATED_BUCKET_ARN } = process.env;
 
 exports.handler = async (event: any) => {
-  console.log("Chime Meeting Delete Event:", JSON.stringify(event, null, 2));
+  console.log("Chime Event:", JSON.stringify(event, null, 2));
   /**Example event:
    * {
     "version": "0",
@@ -29,52 +29,52 @@ exports.handler = async (event: any) => {
 }
    */
 
-  const meetingId = event.detail.meetingId;
-  const meeting = await findMeetingById(meetingId);
+  // const meetingId = event.detail.meetingId;
+  // const meeting = await findMeetingById(meetingId);
 
-  const client = new ChimeSDKMediaPipelinesClient({
-    // Media pipelines are available in us-east-1
-    region: "us-east-1",
-  });
+  // const client = new ChimeSDKMediaPipelinesClient({
+  //   // Media pipelines are available in us-east-1
+  //   region: "us-east-1",
+  // });
 
-  const command = new CreateMediaConcatenationPipelineCommand({
-    Sources: [
-      {
-        Type: "MediaCapturePipeline",
-        MediaCapturePipelineSourceConfiguration: {
-          MediaPipelineArn: meeting.mediaPipelineArn,
-          ChimeSdkMeetingConfiguration: {
-            ArtifactsConfiguration: {
-              Audio: { State: "Enabled" },
-              Video: { State: "Enabled" },
-              Content: { State: "Enabled" },
-              DataChannel: { State: "Enabled" },
-              TranscriptionMessages: { State: "Enabled" },
-              MeetingEvents: { State: "Enabled" },
-              CompositedVideo: { State: "Enabled" },
-            },
-          },
-        },
-      },
-    ],
-    Sinks: [
-      {
-        Type: "S3Bucket",
-        S3BucketSinkConfiguration: {
-          // Destination: `${CONCATENATED_BUCKET_ARN}/${meetingId}`,
-          // Destination: CONCATENATED_BUCKET_ARN,
-          Destination: "arn:aws:s3:::tksuzuki-us-east-1",
-        },
-      },
-    ],
-  });
+  // const command = new CreateMediaConcatenationPipelineCommand({
+  //   Sources: [
+  //     {
+  //       Type: "MediaCapturePipeline",
+  //       MediaCapturePipelineSourceConfiguration: {
+  //         MediaPipelineArn: meeting.mediaPipelineArn,
+  //         ChimeSdkMeetingConfiguration: {
+  //           ArtifactsConfiguration: {
+  //             Audio: { State: "Enabled" },
+  //             Video: { State: "Enabled" },
+  //             Content: { State: "Enabled" },
+  //             DataChannel: { State: "Enabled" },
+  //             TranscriptionMessages: { State: "Enabled" },
+  //             MeetingEvents: { State: "Enabled" },
+  //             CompositedVideo: { State: "Enabled" },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   ],
+  //   Sinks: [
+  //     {
+  //       Type: "S3Bucket",
+  //       S3BucketSinkConfiguration: {
+  //         // Destination: `${CONCATENATED_BUCKET_ARN}/${meetingId}`,
+  //         // Destination: CONCATENATED_BUCKET_ARN,
+  //         Destination: "arn:aws:s3:::tksuzuki-us-east-1",
+  //       },
+  //     },
+  //   ],
+  // });
 
-  console.debug("Command:", JSON.stringify(command, null, 2));
+  // console.debug("Command:", JSON.stringify(command, null, 2));
 
-  try {
-    const response = await client.send(command);
-    console.log("Media Concatenation Pipeline Created:", response);
-  } catch (error) {
-    console.error("Error creating Media Concatenation Pipeline:", error);
-  }
+  // try {
+  //   const response = await client.send(command);
+  //   console.log("Media Concatenation Pipeline Created:", response);
+  // } catch (error) {
+  //   console.error("Error creating Media Concatenation Pipeline:", error);
+  // }
 };
