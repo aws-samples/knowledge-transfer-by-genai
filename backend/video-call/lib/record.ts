@@ -3,6 +3,8 @@ import {
   CreateMediaCapturePipelineCommand,
   CreateMediaCapturePipelineCommandInput,
   MediaCapturePipeline,
+  CreateMediaConcatenationPipelineCommand,
+  MediaConcatenationPipeline,
 } from "@aws-sdk/client-chime-sdk-media-pipelines";
 
 const pipelinesClient = new ChimeSDKMediaPipelinesClient({
@@ -48,5 +50,53 @@ export const startCapture = async (props: {
   } catch (error: any) {
     console.error("startCapture is failed.", { error });
     throw new Error("startCapture is failed.");
+  }
+};
+
+export const createConcat = async (props: {
+  capturePipelineArn: string;
+  destination: string;
+}): Promise<MediaConcatenationPipeline | null> => {
+  const command = new CreateMediaConcatenationPipelineCommand({
+    Sources: [
+      {
+        Type: "MediaCapturePipeline",
+        MediaCapturePipelineSourceConfiguration: {
+          MediaPipelineArn: props.capturePipelineArn,
+          ChimeSdkMeetingConfiguration: {
+            ArtifactsConfiguration: {
+              Audio: { State: "Enabled" },
+              Video: { State: "Enabled" },
+              Content: { State: "Enabled" },
+              DataChannel: { State: "Enabled" },
+              TranscriptionMessages: { State: "Enabled" },
+              MeetingEvents: { State: "Enabled" },
+              CompositedVideo: { State: "Enabled" },
+            },
+          },
+        },
+      },
+    ],
+    Sinks: [
+      {
+        Type: "S3Bucket",
+        S3BucketSinkConfiguration: {
+          // Destination: `${CONCATENATED_BUCKET_ARN}/${meetingId}`,
+          // Destination: CONCATENATED_BUCKET_ARN,
+          // Destination: "arn:aws:s3:::tksuzuki-us-east-1",
+          Destination: props.destination,
+        },
+      },
+    ],
+  });
+  console.debug("Concat Command:", JSON.stringify(command, null, 2));
+
+  try {
+    const response = await pipelinesClient.send(command);
+    console.log("Media Concatenation Pipeline Created:", response);
+    return response.MediaConcatenationPipeline ?? null;
+  } catch (error) {
+    console.error("Error creating Media Concatenation Pipeline:", error);
+    throw new Error("Error creating Media Concatenation Pipeline");
   }
 };

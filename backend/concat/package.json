@@ -14,7 +14,7 @@
     "@aws-sdk/client-s3": "^3.624.0",
     "@aws-sdk/client-transcribe": "^3.624.0",
     "@aws-sdk/credential-providers": "^3.624.0",
-    "@industrial-knowledge-transfer-by-genai/common": "file: ../common",
+    "@industrial-knowledge-transfer-by-genai/common": "file:../common",
     "@types/aws-lambda": "^8.10.142",
     "typescript": "^5.5.4"
   },

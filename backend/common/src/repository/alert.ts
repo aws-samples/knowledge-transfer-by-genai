@@ -21,7 +21,7 @@ export const getTableName = () => {
   return ALERT_TABLE_NAME;
 };
 
-export const createAlert = async (alert: Alert) => {
+export const storeAlert = async (alert: Alert) => {
   await dynamoDbDocument.send(
     new PutCommand({
       TableName: ALERT_TABLE_NAME,
@@ -127,7 +127,7 @@ export const appendMeetingToAlert = async (
 //   );
 // };
 
-export const deleteAlert = async (alertId: string): Promise<void> => {
+export const removeAlert = async (alertId: string): Promise<void> => {
   await dynamoDbDocument.send(
     new DeleteCommand({
       TableName: ALERT_TABLE_NAME,

@@ -4,11 +4,12 @@ import * as targets from "aws-cdk-lib/aws-events-targets";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
 import { Duration, Stack } from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Database } from "./database";
 
 export interface VideoConcatProps {
-  readonly recordingBucket: s3.IBucket;
+  readonly concatenatedBucket: s3.IBucket;
   readonly database: Database;
 }
 
@@ -30,10 +31,25 @@ export class VideoConcat extends Construct {
           ACCOUNT_ID: Stack.of(this).account,
           REGION: Stack.of(this).region,
           ALERT_TABLE_NAME: props.database.alertTable.tableName,
+          MEETING_TABLE_NAME: props.database.meetingTable.tableName,
+          CONCATENATED_BUCKET_ARN: props.concatenatedBucket.bucketArn,
         },
       }
     );
+    concatTriggerFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["chime:CreateMediaConcatenationPipeline"],
+        resources: ["*"],
+      })
+    );
+    props.concatenatedBucket.grantReadWrite(concatTriggerFunction);
     props.database.alertTable.grantReadWriteData(concatTriggerFunction);
+    props.database.meetingTable.grantReadWriteData(concatTriggerFunction);
+    s3.Bucket.fromBucketArn(
+      this,
+      "TestUs1Bucket",
+      "arn:aws:s3:::tksuzuki-us-east-1"
+    ).grantReadWrite(concatTriggerFunction);
 
     const rule = new events.Rule(this, "ChimeMeetingDeleteRule", {
       eventPattern: {

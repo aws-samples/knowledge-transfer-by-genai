@@ -5,11 +5,15 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { v4 } from "uuid";
 import { AppSyncResolverHandler } from "aws-lambda";
-import { startCapture } from "./lib/record";
+import { startCapture, createConcat } from "./lib/record";
 import { startTranscribe } from "./lib/transcribe";
-import { appendMeetingToAlert } from "@industrial-knowledge-transfer-by-genai/common";
+import {
+  appendMeetingToAlert,
+  storeMeeting,
+} from "@industrial-knowledge-transfer-by-genai/common";
 
-const { RECORDING_BUCKET_ARN, ACCOUNT_ID } = process.env;
+const { RECORDING_BUCKET_ARN, CONCATENATED_BUCKET_ARN, ACCOUNT_ID } =
+  process.env;
 
 type EmptyArgument = {};
 
@@ -113,10 +117,10 @@ const createChimeMeeting = async (
   console.debug(`meetingResponse: ${JSON.stringify(meetingResponse)}`);
 
   // Store dynamodb
-  await appendMeetingToAlert(
-    request.alertId,
-    meetingResponse.Meeting.MeetingId
-  );
+  // await appendMeetingToAlert(
+  //   request.alertId,
+  //   meetingResponse.Meeting.MeetingId
+  // );
 
   // Start recording
   const captureDestination = `${RECORDING_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
@@ -128,6 +132,21 @@ const createChimeMeeting = async (
   console.debug(
     `startCaptureResponse: ${JSON.stringify(startCaptureResponse)}`
   );
+
+  // Set concat pipeline
+  const concatDestination = `${CONCATENATED_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
+  const concatResponse = await createConcat({
+    capturePipelineArn: startCaptureResponse?.MediaPipelineArn!,
+    destination: concatDestination,
+  });
+  console.debug(`concatResponse: ${JSON.stringify(concatResponse)}`);
+
+  // Store meeting info to dynamodb
+  await storeMeeting({
+    id: meetingResponse.Meeting.MeetingId,
+    alertId: request.alertId,
+    mediaPipelineArn: startCaptureResponse?.MediaPipelineArn!,
+  });
 
   // // Start transcription
   // const startTranscribeResponse = await startTranscribe(

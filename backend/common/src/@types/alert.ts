@@ -1,6 +1,6 @@
 export type Status = "OPEN" | "CLOSED";
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-export type Meeting = {
+type Meeting = {
   id: string;
 };
 export type Alert = {

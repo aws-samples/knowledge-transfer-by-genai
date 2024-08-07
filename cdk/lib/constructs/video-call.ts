@@ -12,6 +12,7 @@ import { Database } from "./database";
 export interface VideoCallProps {
   readonly auth: Auth;
   readonly recordingBucket: s3.IBucket;
+  readonly concatenatedBucket: s3.IBucket;
   readonly database: Database;
 }
 
@@ -37,7 +38,9 @@ export class VideoCall extends Construct {
           USER_POOL_ID: props.auth.userPool.userPoolId,
           USER_POOL_REGION: props.auth.userPool.stack.region,
           RECORDING_BUCKET_ARN: props.recordingBucket.bucketArn,
+          CONCATENATED_BUCKET_ARN: props.concatenatedBucket.bucketArn,
           ALERT_TABLE_NAME: props.database.alertTable.tableName,
+          MEETING_TABLE_NAME: props.database.meetingTable.tableName,
         },
       }
     );
@@ -52,12 +55,15 @@ export class VideoCall extends Construct {
           "chime:CreateMediaCapturePipeline",
           "chime:StartMeetingTranscription",
           "cognito-idp:ListUsers",
+          "chime:CreateMediaConcatenationPipeline",
         ],
         resources: ["*"],
       })
     );
     props.recordingBucket.grantReadWrite(chimeResolverFunction);
+    props.concatenatedBucket.grantReadWrite(chimeResolverFunction);
     props.database.alertTable.grantReadWriteData(chimeResolverFunction);
+    props.database.meetingTable.grantReadWriteData(chimeResolverFunction);
 
     // chimeResolverFunction.addToRolePolicy(
     //   new PolicyStatement({

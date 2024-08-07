@@ -34,7 +34,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
       serverAccessLogsPrefix: "RecordingBucket",
     });
 
-    const transcribeBucket = new s3.Bucket(this, "TranscribeBucket", {
+    const concatenatedBucket = new s3.Bucket(this, "ConcatenatedBucket", {
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       enforceSSL: true,
@@ -42,19 +42,38 @@ export class KnowledgeTransferStack extends cdk.Stack {
       objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "TranscribeBucket",
+      serverAccessLogsPrefix: "ConcatenatedBucket",
     });
 
     // Need to allow access from mediapipelines.chime.amazonaws.com
-    const bucketPolicyStatement = new iam.PolicyStatement({
+    // Ref: https://docs.aws.amazon.com/chime-sdk/latest/dg/create-concat-pipe-steps.html
+    const recordingBucketPolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ["s3:PutObject", "s3:PutObjectAcl"],
+      actions: [
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:GetObject",
+        "s3:ListBucket",
+      ],
       principals: [
         new iam.ServicePrincipal("mediapipelines.chime.amazonaws.com"),
       ],
       resources: [recordingBucket.bucketArn, `${recordingBucket.bucketArn}/*`],
     });
-    recordingBucket.addToResourcePolicy(bucketPolicyStatement);
+    recordingBucket.addToResourcePolicy(recordingBucketPolicyStatement);
+
+    const concatenatedBucketPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["s3:PutObject", "s3:PutObjectAcl"],
+      principals: [
+        new iam.ServicePrincipal("mediapipelines.chime.amazonaws.com"),
+      ],
+      resources: [
+        concatenatedBucket.bucketArn,
+        `${concatenatedBucket.bucketArn}/*`,
+      ],
+    });
+    concatenatedBucket.addToResourcePolicy(concatenatedBucketPolicyStatement);
 
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database");
@@ -62,6 +81,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
     new VideoCall(this, "VideoCall", {
       auth,
       recordingBucket,
+      concatenatedBucket,
       database,
     });
 
@@ -70,10 +90,10 @@ export class KnowledgeTransferStack extends cdk.Stack {
       database,
     });
 
-    const videoConcat = new VideoConcat(this, "VideoConcat", {
-      recordingBucket,
-      database,
-    });
+    // const videoConcat = new VideoConcat(this, "VideoConcat", {
+    //   concatenatedBucket,
+    //   database,
+    // });
 
     // const transcribe = new Transcribe(this, "Transcribe", {
     //   recordingBucket,

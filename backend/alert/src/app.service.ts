@@ -8,7 +8,7 @@ import {
   Alert,
   findAllAlerts,
   findAlertById,
-  createAlert,
+  storeAlert,
 } from "@industrial-knowledge-transfer-by-genai/common";
 
 @Injectable()
@@ -48,6 +48,6 @@ export class AppService {
       comment: "",
       meetings: [],
     };
-    return await createAlert(alert);
+    return await storeAlert(alert);
   }
 }
