@@ -17,14 +17,8 @@ import {
   // LuPhone,
   LuPhoneOff,
 } from "react-icons/lu";
-import { TbBlur, TbBluerOff } from "react-icons/tb";
-import {
-  DefaultDeviceController,
-  MeetingSessionConfiguration,
-  ConsoleLogger,
-  LogLevel,
-  BackgroundBlurVideoFrameProcessor,
-} from "amazon-chime-sdk-js";
+import { TbBlur, TbBlurOff } from "react-icons/tb";
+import { MeetingSessionConfiguration } from "amazon-chime-sdk-js";
 import {
   useMeetingManager,
   useLocalVideo,
@@ -32,6 +26,7 @@ import {
   VideoTileGrid,
 } from "amazon-chime-sdk-component-library-react";
 import { OnMeetingMessageReceivedSubscription } from "@/features/video-call/graphql-api";
+import { useBackgroundBlurToggle } from "@/features/video-call/hooks/useBackgroundBlurToggle";
 
 type Props = {
   myName: string;
@@ -55,9 +50,9 @@ function ChimeDialog(props: Props) {
   } = useChime();
 
   const [minimize, setMinimize] = useState(false);
-  const [isBlurred, setIsBlurred] = useState(false);
 
   const meetingManager = useMeetingManager();
+  const { isBlurred, toggleBlur } = useBackgroundBlurToggle();
   const { toggleVideo, isVideoEnabled } = useLocalVideo();
   const { toggleMute, muted } = useToggleLocalMute();
 
@@ -85,21 +80,6 @@ function ChimeDialog(props: Props) {
       meetingManager.leave();
     }
   }, [isOpen]);
-
-  // // Initialize video input device
-  // useEffect(() => {
-  //   const initializeVideoInput = async () => {
-  //     const logger = new ConsoleLogger("MyLogger", LogLevel.INFO);
-  //     const deviceController = new DefaultDeviceController(logger);
-  //     const videoInputDevices = await deviceController.listVideoInputDevices();
-  //     if (videoInputDevices.length > 0) {
-  //       const videoInputDevice = videoInputDevices[0].deviceId;
-  //       await meetingManager.startAudioInputDevice(videoInputDevice);
-  //     }
-  //   };
-
-  //   initializeVideoInput();
-  // }, [meetingManager]);
 
   // Make sure the dialog does not close when you click outside the dialog
   const onInteractOutside = (e: Event) => {
@@ -166,22 +146,6 @@ function ChimeDialog(props: Props) {
     }
   };
 
-  const toggleBlur = async () => {
-    const logger = new ConsoleLogger("Logger", LogLevel.INFO);
-    const deviceController = new DefaultDeviceController(logger);
-    const videoInputDevices = await deviceController.listVideoInputDevices();
-    if (videoInputDevices.length > 0) {
-      const videoInputDevice = videoInputDevices[0].deviceId;
-
-      if (isBlurred) {
-        await meetingManager.startAudioInputDevice(null);
-      } else {
-        await meetingManager.startAudioInputDevice(videoInputDevice);
-      }
-      setIsBlurred(!isBlurred);
-    }
-  };
-
   const gridClass = minimize ? "" : "grid-rows-[32px,1fr,48px] min-h-[416px]";
 
   return (
@@ -194,58 +158,62 @@ function ChimeDialog(props: Props) {
         )}
         onInteractOutside={onInteractOutside}
       >
-        {!minimize && (
-          <DialogHeader className="h-8">
-            <DialogTitle>通話中</DialogTitle>
-          </DialogHeader>
-        )}
-        {!minimize && (
-          <div className="flex min-h-64">
-            <VideoTileGrid />
+        {!meetingInfo ? (
+          <div className="flex flex-col items-center justify-center h-64">
+            <p className="text-lg">会議部屋を作成しています...</p>
           </div>
+        ) : (
+          <>
+            {!minimize && <DialogHeader className="h-8">通話中</DialogHeader>}
+            {!minimize && (
+              <div className="flex min-h-64">
+                <VideoTileGrid />
+              </div>
+            )}
+            <DialogFooter>
+              <div className="flex h-12 w-full justify-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 rounded-full bg-white text-black"
+                  onClick={toggleMute}
+                >
+                  {!muted ? <LuMic size="20" /> : <LuMicOff size="20" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="submit"
+                  className="h-12 w-12 rounded-full bg-white text-black"
+                  onClick={toggleVideo}
+                >
+                  {isVideoEnabled ? (
+                    <LuVideo size="20" />
+                  ) : (
+                    <LuVideoOff size="20" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="submit"
+                  className="h-12 w-12 rounded-full bg-rose-700 text-white"
+                  onClick={onClickEndCall}
+                >
+                  <LuPhoneOff size="20" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-12 w-12 rounded-full bg-white text-black"
+                  onClick={toggleBlur}
+                >
+                  {isBlurred ? <TbBlurOff size="20" /> : <TbBlur size="20" />}
+                </Button>
+              </div>
+            </DialogFooter>
+          </>
         )}
-        <DialogFooter>
-          <div className="flex h-12 w-full justify-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-white text-black"
-              onClick={toggleMute}
-            >
-              {!muted ? <LuMic size="20" /> : <LuMicOff size="20" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              type="submit"
-              className="h-12 w-12 rounded-full bg-white text-black"
-              onClick={toggleVideo}
-            >
-              {isVideoEnabled ? (
-                <LuVideo size="20" />
-              ) : (
-                <LuVideoOff size="20" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              type="submit"
-              className="h-12 w-12 rounded-full bg-rose-700 text-white"
-              onClick={onClickEndCall}
-            >
-              <LuPhoneOff size="20" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-white text-black"
-              onClick={toggleBlur}
-            >
-              {isBlurred ? <TbBluerOff size="20" /> : <TbBlur size="20" />}
-            </Button>
-          </div>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

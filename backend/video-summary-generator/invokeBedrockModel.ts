@@ -14,9 +14,16 @@ const s3Client = new S3Client({});
 const bedrockClient = new BedrockRuntimeClient({ region: BEDROCK_REGION });
 
 const SUMMARY_INSTRUCTIONS = `
-Your task is list Key Stakeholders and highlight Key Discussion Points 
-and list Decisions and outline Action Items and provide meeting notes 
-and create a concise summary.`;
+あなたのタスクは議事録を取ることです。
+<guideline>
+- 主要な論点をピックアップする
+- 決定事項およびアクションアイテムをリストアップする
+- 上記を踏まえた上で、要約を作成する
+- 要約を補強する背景や詳細を提供する
+</guideline>
+上記のガイドラインを遵守し、トランスクリプトをもとに議事録を作成してください。
+<transcript>TRANSCRIPT</transcript>
+`;
 
 const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID;
 
@@ -40,16 +47,16 @@ export const invokeBedrockModel = async (event) => {
 
     // Get the transcript
     const transcript = JSON.stringify(data.results.transcripts[0].transcript);
+    const prompt = SUMMARY_INSTRUCTIONS.replace("TRANSCRIPT", transcript);
 
     console.debug(`transcript: ${transcript}`);
+    console.debug(`prompt: ${prompt}`);
 
-    // Create the payload for the Anthropic model
+    // Create the payload for Bedrock
     const messages = [
       {
         role: "user",
-        content: [
-          { type: "text", text: `${SUMMARY_INSTRUCTIONS} ${transcript}` },
-        ],
+        content: [{ type: "text", text: prompt }],
       },
     ];
 

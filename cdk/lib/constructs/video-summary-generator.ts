@@ -102,13 +102,7 @@ export class VideoSummaryGenerator extends Construct {
           TranscriptionJobName: sfn.JsonPath.stringAt(
             "States.Format('summary-generator-{}', $.Source.Payload.SourceFileNameWithDate)"
           ),
-          // OutputBucketName: sfn.JsonPath.stringAt(
-          //   "$$.Execution.Input.detail.bucket.name"
-          // ),
           OutputBucketName: props.transcriptionBucket.bucketName,
-          // OutputKey: sfn.JsonPath.stringAt(
-          //   "$.Source.Payload.SourceFileName"
-          // ),
           OutputKey: sfn.JsonPath.stringAt(
             "States.Format('{}/{}.json', $$.Execution.Input.detail.meetingId, $.Source.Payload.SourceFileName)"
           ),
@@ -256,7 +250,7 @@ export class VideoSummaryGenerator extends Construct {
 
     // EventBridge Rule
     // Note: Both Capture pipeline and Concatenation pipeline send the same event structure.
-    // Need to filter by event detail.
+    // So the SFn is triggered twice.
     const rule = new events.Rule(this, "ChimeMediaPipelineStateChangeRule", {
       eventPattern: {
         source: ["aws.chime"],

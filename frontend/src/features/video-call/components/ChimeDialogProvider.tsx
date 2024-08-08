@@ -1,6 +1,7 @@
 import { ThemeProvider } from "styled-components";
 import {
   MeetingProvider,
+  BackgroundBlurProvider,
   lightTheme,
   GlobalStyles,
 } from "amazon-chime-sdk-component-library-react";
@@ -13,14 +14,16 @@ type Props = {
 
 function ChimeDialogProvider(props: Props) {
   const { children } = props;
-  // Thin wrapper component to provide the ChimeDialog and ChimeCalleeDialog components
+  // Thin wrapper component to provide Chime functionality to children
   return (
     <ThemeProvider theme={lightTheme}>
       <GlobalStyles />
-      <MeetingProvider>
-        <ChimeCalleeDialog myName={props?.myName ?? ""} />
-        {children}
-      </MeetingProvider>
+      <BackgroundBlurProvider>
+        <MeetingProvider>
+          <ChimeCalleeDialog myName={props?.myName ?? ""} />
+          {children}
+        </MeetingProvider>
+      </BackgroundBlurProvider>
     </ThemeProvider>
   );
 }
