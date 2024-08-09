@@ -134,7 +134,8 @@ const createChimeMeeting = async (
   );
 
   // Set concat pipeline
-  const concatDestination = `${CONCATENATED_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
+  // Add `video` prefix so that can set CloudFront behavior
+  const concatDestination = `${CONCATENATED_BUCKET_ARN}/video/${meetingResponse.Meeting.MeetingId}`;
   const concatResponse = await createConcat({
     capturePipelineArn: startCaptureResponse?.MediaPipelineArn!,
     destination: concatDestination,

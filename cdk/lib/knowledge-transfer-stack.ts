@@ -2,109 +2,28 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { VideoCall } from "./constructs/video-call";
 import { Auth } from "./constructs/auth";
-import * as s3 from "aws-cdk-lib/aws-s3";
 import { Alert } from "./constructs/alert";
 import { Database } from "./constructs/database";
-import * as events from "aws-cdk-lib/aws-events";
-import * as iam from "aws-cdk-lib/aws-iam";
-import { Transcribe } from "./constructs/transcribe";
-import { VideoConcat } from "./constructs/video-concat";
 import { VideoSummaryGenerator } from "./constructs/video-summary-generator";
+import { S3Buckets } from "./constructs/s3buckets";
+import { Knowledge } from "./constructs/knowledge";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as iam from "aws-cdk-lib/aws-iam";
+import { Frontend } from "./constructs/frontend";
 
 export class KnowledgeTransferStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const accessLogBucket = new s3.Bucket(this, "AccessLogBucket", {
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      enforceSSL: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
-      autoDeleteObjects: true,
-    });
-
-    const knowledgeBucket = new s3.Bucket(this, "KnowledgeBucket", {
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      enforceSSL: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
-      autoDeleteObjects: true,
-      serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "KnowledgeBucket",
-    });
-
-    const recordingBucket = new s3.Bucket(this, "RecordingBucket", {
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      enforceSSL: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
-      autoDeleteObjects: true,
-      serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "RecordingBucket",
-    });
-
-    const transcriptionBucket = new s3.Bucket(this, "TranscriptionBucket", {
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      enforceSSL: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
-      autoDeleteObjects: true,
-      serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "TranscriptionBucket",
-    });
-
-    const concatenatedBucket = new s3.Bucket(this, "ConcatenatedBucket", {
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      enforceSSL: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
-      autoDeleteObjects: true,
-      serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "ConcatenatedBucket",
-    });
-
-    // Need to allow access from mediapipelines.chime.amazonaws.com
-    // Ref: https://docs.aws.amazon.com/chime-sdk/latest/dg/create-concat-pipe-steps.html
-    const recordingBucketPolicyStatement = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: [
-        "s3:PutObject",
-        "s3:PutObjectAcl",
-        "s3:GetObject",
-        "s3:ListBucket",
-      ],
-      principals: [
-        new iam.ServicePrincipal("mediapipelines.chime.amazonaws.com"),
-      ],
-      resources: [recordingBucket.bucketArn, `${recordingBucket.bucketArn}/*`],
-    });
-    recordingBucket.addToResourcePolicy(recordingBucketPolicyStatement);
-
-    const concatenatedBucketPolicyStatement = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: ["s3:PutObject", "s3:PutObjectAcl"],
-      principals: [
-        new iam.ServicePrincipal("mediapipelines.chime.amazonaws.com"),
-      ],
-      resources: [
-        concatenatedBucket.bucketArn,
-        `${concatenatedBucket.bucketArn}/*`,
-      ],
-    });
-    concatenatedBucket.addToResourcePolicy(concatenatedBucketPolicyStatement);
-
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database");
+    const buckets = new S3Buckets(this, "S3Buckets");
 
     new VideoCall(this, "VideoCall", {
       auth,
-      recordingBucket,
-      concatenatedBucket,
+      recordingBucket: buckets.recordingBucket,
+      concatenatedBucket: buckets.concatenatedBucket,
       database,
     });
 
@@ -119,17 +38,66 @@ export class KnowledgeTransferStack extends cdk.Stack {
       this,
       "VideoSummaryGenerator",
       {
-        concatenatedBucket,
-        knowledgeBucket,
-        transcriptionBucket,
+        concatenatedBucket: buckets.concatenatedBucket,
+        knowledgeBucket: buckets.knowledgeBucket,
+        transcriptionBucket: buckets.transcriptionBucket,
       }
     );
 
-    // Test
-    // TODO: Remove this
-    const videoConcat = new VideoConcat(this, "VideoConcat", {
-      concatenatedBucket,
-      database,
+    // Knowledge
+    const knowledge = new Knowledge(this, "Knowledge", {
+      knowledgeBucket: buckets.knowledgeBucket,
     });
+
+    const frontend = new Frontend(this, "Frontend", {
+      webAclId: "TODO",
+      videoBucket: buckets.concatenatedBucket,
+      accessLogBucket: buckets.accessLogBucket,
+      enableIpV6: true,
+    });
+    frontend.buildViteApp({
+      alertApiEndpoint: alert.api.apiEndpoint,
+      auth,
+    });
+
+    new cdk.CfnOutput(this, "FrontendURL", {
+      value: frontend.getOrigin(),
+    });
+
+    // // Distribution for video delivery
+    // const originAccessIdentity = new cloudfront.OriginAccessIdentity(
+    //   this,
+    //   "OAI"
+    // );
+    // const distribution = new cloudfront.Distribution(this, "Distribution", {
+    //   defaultBehavior: {
+    //     origin: new cloudfrontOrigins.S3Origin(buckets.concatenatedBucket, {
+    //       originAccessIdentity: originAccessIdentity,
+    //     }),
+    //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    //   },
+    // });
+    // buckets.concatenatedBucket.addToResourcePolicy(
+    //   new iam.PolicyStatement({
+    //     actions: ["s3:GetObject"],
+    //     resources: [buckets.concatenatedBucket.arnForObjects("*")],
+    //     principals: [
+    //       new iam.CanonicalUserPrincipal(
+    //         originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId
+    //       ),
+    //     ],
+    //   })
+    // );
+
+    // new cdk.CfnOutput(this, "DistributionDomainName", {
+    //   value: distribution.distributionDomainName,
+    // });
+
+    // // Test
+    // // TODO: Remove this
+    // const videoConcat = new VideoConcat(this, "VideoConcat", {
+    //   concatenatedBucket: buckets.concatenatedBucket,
+    //   database,
+    // });
   }
 }

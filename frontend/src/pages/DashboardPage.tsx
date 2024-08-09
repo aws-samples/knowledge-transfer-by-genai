@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import useAlert from "@/features/alert/hooks/useAlert";
 import { getSeverityColor, getStatusColor } from "@/features/alert/utils/color";
-import { Severity } from "industrial-knowledge-transfer-by-genai";
+import { Severity } from "@/types/alert";
 import { DashboardAlert } from "@/features/alert/types";
 import { LuCheck, LuChevronRight, LuCoffee, LuFlame } from "react-icons/lu";
 import { twMerge } from "tailwind-merge";
@@ -105,7 +105,7 @@ function AlertPage() {
 
   const onClickItem = useCallback(
     (item: DashboardAlert) => {
-      navigate(`/alert/${item.id}`);
+      navigate({ params: { alertId: item.id } });
     },
     [filteredData]
   );

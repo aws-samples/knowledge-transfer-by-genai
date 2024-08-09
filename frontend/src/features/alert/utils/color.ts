@@ -1,4 +1,4 @@
-import { Severity, Status } from "industrial-knowledge-transfer-by-genai";
+import { Severity, Status } from "@/types/alert";
 
 export const getSeverityColor = (severity: Severity) => {
   let color = "";

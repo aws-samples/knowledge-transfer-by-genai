@@ -38,7 +38,8 @@
     "react-dom": "^18.3.1",
     "react-i18next": "^14.0.5",
     "react-icons": "^5.2.1",
-    "styled-components": "^5.0.0",
+    "react-player": "^2.16.0",
+    "styled-components": "^5.3.11",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^4.5.4"
@@ -48,6 +49,7 @@
     "@types/industrial-knowledge-transfer-by-genai": "file:../types",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@types/styled-components": "^5.1.34",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
     "@vitejs/plugin-react-swc": "^3.5.0",

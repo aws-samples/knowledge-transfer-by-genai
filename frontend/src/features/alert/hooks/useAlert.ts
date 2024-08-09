@@ -1,4 +1,4 @@
-import { Alert } from "industrial-knowledge-transfer-by-genai";
+import { Alert } from "@/types/alert";
 
 const useAlert = () => {
   const alerts: Alert[] = [

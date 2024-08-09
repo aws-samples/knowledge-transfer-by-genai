@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation } from "@tanstack/react-router";
 import CloseAlertDialog from "@/features/alert/components/CloseAlertDialog";
 import Chat from "@/features/chat/components/Chat";
 import AlertDetailCard from "@/features/alert/components/AlertDetailCard";

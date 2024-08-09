@@ -36,7 +36,8 @@ export const prepareInput = async (event: any) => {
 
   return {
     MeetingId: meetingId,
-    S3Uri: `s3://${CONCATENATED_BUCKET_NAME}/${meetingId}/composited-video/${mediaPipelineId}.mp4`,
+    // Add `video` prefix so that can set CloudFront behavior
+    S3Uri: `s3://${CONCATENATED_BUCKET_NAME}/video/${meetingId}/composited-video/${mediaPipelineId}.mp4`,
     SourceBucketName: CONCATENATED_BUCKET_NAME,
     SourceKeyName: `${meetingId}/composited-video/${mediaPipelineId}.mp4`,
     SourceFileName: `${mediaPipelineId}.mp4`,

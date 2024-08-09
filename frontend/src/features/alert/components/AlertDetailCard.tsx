@@ -1,4 +1,4 @@
-import { Alert } from "industrial-knowledge-transfer-by-genai";
+import { Alert } from "@/types/alert";
 import { Card } from "@/components/ui/card";
 import { getSeverityColor, getStatusColor } from "@/features/alert/utils/color";
 import { LuCheck, LuFlame } from "react-icons/lu";
