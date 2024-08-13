@@ -116,12 +116,6 @@ const createChimeMeeting = async (
 
   console.debug(`meetingResponse: ${JSON.stringify(meetingResponse)}`);
 
-  // Store dynamodb
-  // await appendMeetingToAlert(
-  //   request.alertId,
-  //   meetingResponse.Meeting.MeetingId
-  // );
-
   // Start recording
   const captureDestination = `${RECORDING_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
   const startCaptureResponse = await startCapture({
@@ -142,20 +136,17 @@ const createChimeMeeting = async (
   });
   console.debug(`concatResponse: ${JSON.stringify(concatResponse)}`);
 
-  // Store meeting info to dynamodb
-  await storeMeeting({
-    id: meetingResponse.Meeting.MeetingId,
-    alertId: request.alertId,
-    mediaPipelineArn: startCaptureResponse?.MediaPipelineArn!,
-  });
-
-  // // Start transcription
-  // const startTranscribeResponse = await startTranscribe(
-  //   meetingResponse.Meeting.MeetingId
-  // );
-  // console.debug(
-  //   `startTranscribeResponse: ${JSON.stringify(startTranscribeResponse)}`
-  // );
+  // Store to dynamodb
+  await Promise.all([
+    storeMeeting({
+      id: meetingResponse.Meeting.MeetingId,
+      alertId: request.alertId,
+      capturePipelineArn: startCaptureResponse?.MediaPipelineArn!,
+      concatPipelineArn: concatResponse?.MediaPipelineArn!,
+      createdAt: new Date().toISOString(),
+    }),
+    // appendMeetingToAlert(request.alertId, meetingResponse.Meeting.MeetingId),
+  ]);
 
   return await joinMeeting({
     meetingResponse: JSON.stringify(meetingResponse),

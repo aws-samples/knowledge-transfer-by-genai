@@ -7,6 +7,7 @@ import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import { updateMeeting } from "@industrial-knowledge-transfer-by-genai/common";
 
 const { KNOWLEDGE_BUCKET_NAME, BEDROCK_REGION } = process.env;
 
@@ -93,6 +94,11 @@ export const invokeBedrockModel = async (event) => {
       ContentType: "text/plain",
     });
     await s3Client.send(putObjectCommand);
+
+    // Update the meeting on DynamoDB
+    await updateMeeting(event.Source.Payload.MeetingId, {
+      summarizedAt: new Date().toISOString(),
+    });
 
     result = {
       bucketName: KNOWLEDGE_BUCKET_NAME,

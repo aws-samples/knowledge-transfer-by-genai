@@ -16,6 +16,7 @@ const dynamoDb = new DynamoDBClient({});
 const dynamoDbDocument = DynamoDBDocumentClient.from(dynamoDb);
 
 export const storeMeeting = async (meeting: Meeting) => {
+  console.log(`Storing meeting ${JSON.stringify(meeting)}`);
   await dynamoDbDocument.send(
     new PutCommand({
       TableName: MEETING_TABLE_NAME,
@@ -25,17 +26,30 @@ export const storeMeeting = async (meeting: Meeting) => {
   return meeting;
 };
 
-export const findAllMeetings = async (): Promise<Meeting[]> => {
+export const findAllMeetingsByAlertId = async (
+  alertId: string
+): Promise<Meeting[]> => {
+  console.log("Finding all meetings by alert id");
+
   const res = await dynamoDbDocument.send(
-    new ScanCommand({
+    new QueryCommand({
       TableName: MEETING_TABLE_NAME,
+      IndexName: "AlertIndex",
+      KeyConditionExpression: "#alertId = :alertId",
+      ExpressionAttributeNames: {
+        "#alertId": "alertId",
+      },
+      ExpressionAttributeValues: {
+        ":alertId": alertId,
+      },
     })
   );
 
-  return res.Items ? res.Items.map((item) => unmarshall(item) as Meeting) : [];
+  return (res.Items || []) as Meeting[];
 };
 
 export const findMeetingById = async (meetingId: string): Promise<Meeting> => {
+  console.log(`Finding meeting with id ${meetingId}`);
   const res = await dynamoDbDocument.send(
     new QueryCommand({
       TableName: MEETING_TABLE_NAME,
@@ -61,6 +75,9 @@ export const updateMeeting = async (
   meetingId: string,
   updatedFields: Partial<Meeting>
 ): Promise<void> => {
+  console.log(
+    `Updating meeting ${meetingId} with ${JSON.stringify(updatedFields)}`
+  );
   const updateExpressions: string[] = [];
   const expressionAttributeValues: { [key: string]: any } = {};
   const expressionAttributeNames: { [key: string]: string } = {};
@@ -84,6 +101,7 @@ export const updateMeeting = async (
 };
 
 export const removeMeeting = async (meetingId: string): Promise<void> => {
+  console.log(`Deleting meeting with id ${meetingId}`);
   await dynamoDbDocument.send(
     new DeleteCommand({
       TableName: MEETING_TABLE_NAME,

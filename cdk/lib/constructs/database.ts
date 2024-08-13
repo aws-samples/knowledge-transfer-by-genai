@@ -23,6 +23,13 @@ export class Database extends Construct {
       },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
     });
+    meetingTable.addGlobalSecondaryIndex({
+      indexName: "AlertIndex",
+      partitionKey: {
+        name: "alertId",
+        type: ddb.AttributeType.STRING,
+      },
+    });
 
     this.alertTable = alertTable;
     this.meetingTable = meetingTable;

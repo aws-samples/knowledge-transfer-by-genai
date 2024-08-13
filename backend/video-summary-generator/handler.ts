@@ -1,5 +1,5 @@
-import { prepareInput } from "./prepare-input";
-import { formatTranscription } from "./format-transcription";
+import { prepareInput } from "./prepareInput";
+import { formatTranscription } from "./formatTranscription";
 import { invokeBedrockModel } from "./invokeBedrockModel";
 
 exports.handler = async (event: any) => {

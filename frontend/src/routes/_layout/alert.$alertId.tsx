@@ -7,6 +7,7 @@ import ChimeDialog from "@/features/video-call/components/ChimeDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useAlert from "@/features/alert/hooks/useAlert";
 import { AuthUser } from "aws-amplify/auth";
+import MeetingVideoCard from "@/features/video-call/components/MeetingVideoCard";
 
 let user: AuthUser | undefined;
 
@@ -26,19 +27,15 @@ type ComponentProps = {
 function AlertDetailPage(props: ComponentProps) {
   user = props.user;
   const location = useLocation();
-  const { alerts, updateAlert } = useAlert();
+  const { alerts, closeWithComment } = useAlert();
   const alertId = location.pathname.split("/")[2];
   const alert =
     alertId && alerts ? alerts.find((alert) => alert.id === alertId) : null;
 
   const onCloseSubmit = (comment: string) => {
     if (alert) {
-      updateAlert({
-        ...alert,
-        status: "CLOSED",
-        closedAt: new Date().toISOString(),
-        comment,
-      });
+      console.log("Closing alert", alert.id, "with comment", comment);
+      closeWithComment(alert.id, comment);
       //TODO: display snackbar
     }
   };
@@ -60,6 +57,7 @@ function AlertDetailPage(props: ComponentProps) {
                 <>
                   <AlertDetailCard item={alert} />
                   <ContactCard />
+                  <MeetingVideoCard alertId={alert.id}></MeetingVideoCard>
                 </>
               )}
             </div>

@@ -46,9 +46,11 @@ export class Alert extends Construct {
         ACCOUNT_ID: Stack.of(this).account,
         REGION: Stack.of(this).region,
         ALERT_TABLE_NAME: database.alertTable.tableName,
+        MEETING_TABLE_NAME: props.database.meetingTable.tableName,
       },
     });
     database.alertTable.grantReadWriteData(handler.role!);
+    database.meetingTable.grantReadWriteData(handler.role!);
 
     const api = new HttpApi(this, "Default", {
       corsPreflight: {

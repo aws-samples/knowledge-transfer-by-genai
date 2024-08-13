@@ -53,6 +53,7 @@ function AlertPage() {
 
   useEffect(() => {
     if (!selectedTab) return;
+    if (!alerts) return;
     // debug purpose
     // console.log("alerts:" + JSON.str
     const updatedAlerts = alerts.map((item) => ({

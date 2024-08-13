@@ -8,6 +8,7 @@ import * as targets from "aws-cdk-lib/aws-events-targets";
 import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
+import { Database } from "./database";
 
 type BedrockModelId =
   | "anthropic.claude-v2:1"
@@ -26,6 +27,7 @@ export interface VideoSummaryGeneratorProps {
   readonly transcriptionBucket: s3.IBucket;
   readonly bedrockModelId?: BedrockModelId;
   readonly bedrockRegion?: string;
+  readonly database: Database;
 }
 
 export class VideoSummaryGenerator extends Construct {
@@ -58,6 +60,7 @@ export class VideoSummaryGenerator extends Construct {
         KNOWLEDGE_BUCKET_NAME: props.knowledgeBucket.bucketName,
         BEDROCK_MODEL_ID: bedrockModelId,
         BEDROCK_REGION: bedrockRegion,
+        MEETING_TABLE_NAME: props.database.meetingTable.tableName,
       },
     });
     summaryGenHandler.addToRolePolicy(
@@ -72,6 +75,7 @@ export class VideoSummaryGenerator extends Construct {
         resources: ["*"],
       })
     );
+    props.database.meetingTable.grantReadWriteData(summaryGenHandler);
     props.concatenatedBucket.grantReadWrite(summaryGenHandler);
     props.knowledgeBucket.grantReadWrite(summaryGenHandler);
     props.transcriptionBucket.grantReadWrite(summaryGenHandler);
@@ -88,6 +92,11 @@ export class VideoSummaryGenerator extends Construct {
         "Payload.$": "$.Payload",
       },
     });
+
+    const isConcatenatedMediaPipeline = new sfn.Choice(
+      this,
+      "IsConcatenatedMediaPipeline"
+    );
 
     const startTranscriptionJob = new tasks.CallAwsService(
       this,
@@ -131,6 +140,19 @@ export class VideoSummaryGenerator extends Construct {
         resultPath: "$.TranscriptionJob",
       }
     );
+
+    // Note: Both Capture pipeline and Concatenation pipeline send the same event structure.
+    // If the event is from the Capture pipeline, the `IsEventConcatenatedMediaPipeline` is set to false.
+    // Then the state machine will skip the transcription job and end with a success.
+    isConcatenatedMediaPipeline
+      .when(
+        sfn.Condition.booleanEquals(
+          "$.Source.Payload.IsEventConcatenatedMediaPipeline",
+          false
+        ),
+        new sfn.Succeed(this, "Skipped")
+      )
+      .otherwise(startTranscriptionJob);
 
     const waitForTranscriptionJob = new sfn.Wait(
       this,
@@ -250,7 +272,6 @@ export class VideoSummaryGenerator extends Construct {
 
     // EventBridge Rule
     // Note: Both Capture pipeline and Concatenation pipeline send the same event structure.
-    // So the SFn is triggered twice.
     const rule = new events.Rule(this, "ChimeMediaPipelineStateChangeRule", {
       eventPattern: {
         source: ["aws.chime"],

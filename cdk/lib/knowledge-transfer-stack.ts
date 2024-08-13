@@ -41,6 +41,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
         concatenatedBucket: buckets.concatenatedBucket,
         knowledgeBucket: buckets.knowledgeBucket,
         transcriptionBucket: buckets.transcriptionBucket,
+        database,
       }
     );
 
