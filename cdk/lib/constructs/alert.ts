@@ -48,6 +48,7 @@ export class Alert extends Construct {
         REGION: Stack.of(this).region,
         ALERT_TABLE_NAME: database.alertTable.tableName,
         MEETING_TABLE_NAME: props.database.meetingTable.tableName,
+        CORS_ALLOW_ORIGINS: allowOrigins.join(","),
       },
     });
     database.alertTable.grantReadWriteData(handler.role!);
