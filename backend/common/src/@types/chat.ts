@@ -22,18 +22,18 @@ export type UsedChunk = {
   rank: number;
 };
 
-export type MessageContent = {
-  role: Role;
-  content: Content[];
-  model: Model;
-  usedChunks: UsedChunk[];
-};
-
 export type RelatedDocument = {
   chunkBody: string;
   contentType: "s3" | "url" | "youtube";
   sourceLink: string;
   rank: number;
+};
+
+export type MessageContent = {
+  role: Role;
+  content: Content[];
+  model: Model;
+  usedChunks: UsedChunk[];
 };
 
 export type PostMessageRequest = {
@@ -44,6 +44,5 @@ export type PostMessageRequest = {
 export type Conversation = {
   id: string;
   alertId: string;
-  model: Model;
   messages: MessageContent[];
 };

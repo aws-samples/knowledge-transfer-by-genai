@@ -15,11 +15,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.1.0"
+    "@types/node": "^22.1.0",
+    "@types/uuid": "^10.0.0"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.623.0",
     "@aws-sdk/lib-dynamodb": "^3.623.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "uuid": "^10.0.0"
   }
 }

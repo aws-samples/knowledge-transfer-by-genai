@@ -74,11 +74,11 @@ export class KnowledgeTransferStack extends cdk.Stack {
       "/api/*"
     );
     cfgw.addBucket(buckets.concatenatedBucket, "/video/*");
-    cfgw.buildViteApp({
-      alertApiEndpoint: `${cfgw.getOrigin()}/api`,
-      videoCallEndpoint: videoCall.api.graphqlUrl,
-      auth,
-    });
+    // cfgw.buildViteApp({
+    //   alertApiEndpoint: `${cfgw.getOrigin()}/api`,
+    //   videoCallEndpoint: videoCall.api.graphqlUrl,
+    //   auth,
+    // });
 
     new cdk.CfnOutput(this, "DistributionUrl", {
       value: cfgw.getOrigin(),

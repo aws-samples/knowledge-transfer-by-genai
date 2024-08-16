@@ -8,7 +8,7 @@ const useAlertApi = () => {
 
   return {
     getAlerts: () => {
-      return http.get<Alert[]>("/alerts", {
+      return http.get<Alert[]>("/alert", {
         refreshInterval: 5000,
       });
     },
@@ -22,7 +22,7 @@ const useAlertApi = () => {
     },
 
     clearAlerts: () => {
-      return http.delete("/alerts");
+      return http.delete("/alert");
     },
 
     updateAlertStatus: (alertId: string, status: Status) => {
@@ -37,7 +37,7 @@ const useAlertApi = () => {
       alerts?: Alert[] | Promise<Alert[]> | MutatorCallback<Alert[]>,
       options?: Parameters<typeof mutate>[2]
     ) => {
-      return mutate("/alerts", alerts, options);
+      return mutate("/alert", alerts, options);
     },
   };
 };

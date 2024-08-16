@@ -104,53 +104,6 @@ export const closeWithComment = async (
   );
 };
 
-// export const appendMeetingToAlert = async (
-//   alertId: string,
-//   meetingId: string
-// ): Promise<void> => {
-//   console.log(`Appending meeting ${meetingId} to alert ${alertId}`);
-
-//   const meetingIds = new Set([meetingId]);
-
-//   await dynamoDbDocument.send(
-//     new UpdateCommand({
-//       TableName: ALERT_TABLE_NAME,
-//       Key: { id: alertId },
-//       UpdateExpression: "ADD #meetingIds :meetingIds",
-//       ExpressionAttributeNames: {
-//         "#meetingIds": "meetingIds",
-//       },
-//       ExpressionAttributeValues: {
-//         ":meetingIds": meetingIds,
-//       },
-//     })
-//   );
-// };
-
-// export const updateAlert = async (
-//   alertId: string,
-//   updatedFields: Partial<Alert>
-// ): Promise<void> => {
-//   const updateExpressions: string[] = [];
-//   const expressionAttributeValues: { [key: string]: any } = {};
-
-//   Object.entries(updatedFields).forEach(([key, value]) => {
-//     updateExpressions.push(`#${key} = :${key}`);
-//     expressionAttributeValues[`:${key}`] = value;
-//   });
-
-//   await dynamoDbDocument.send(
-//     new UpdateCommand({
-//       TableName: ALERT_TABLE_NAME,
-//       Key: { id: alertId },
-//       UpdateExpression: `SET ${updateExpressions.join(", ")}`,
-//       ExpressionAttributeNames: updatedFields,
-//       ExpressionAttributeValues: expressionAttributeValues,
-//       ReturnValues: "ALL_NEW",
-//     })
-//   );
-// };
-
 export const removeAlert = async (alertId: string): Promise<void> => {
   console.log(`Removing alert ${alertId}`);
   await dynamoDbDocument.send(
