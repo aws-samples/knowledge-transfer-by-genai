@@ -29,7 +29,7 @@ export class ChatController {
     });
   }
 
-  @Get(":alertId")
+  @Get("/:alertId")
   async getConversation(@Param("alertId") alertId: string) {
     return this.chatService.getConversationByAlertId(alertId);
   }

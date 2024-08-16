@@ -42,7 +42,5 @@ export type PostMessageRequest = {
 };
 
 export type Conversation = {
-  id: string;
-  alertId: string;
   messages: MessageContent[];
 };

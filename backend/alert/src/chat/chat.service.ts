@@ -84,7 +84,10 @@ export class ChatService {
             conversation.messages.push(newMessage);
 
             // Store the updated conversation
-            await this.chatRepository.storeConversation(conversation);
+            await this.chatRepository.storeConversation(
+              postMessageRequest.alertId,
+              conversation
+            );
           })
           .catch((err) => {
             subject.error(`ERROR: Can't invoke model. Reason: ${err}`);

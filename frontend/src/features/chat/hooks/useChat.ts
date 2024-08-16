@@ -16,8 +16,8 @@ const useChatState = create<{
   messages: MessageContent[];
   setMessages: (messages: MessageContent[]) => void;
   pushMessage: (message: MessageContent) => void;
-  editLastMessage: (content: string) => void;
   removeLastMessage: () => void;
+  replaceLastMessageContent: (content: string) => void;
   relatedDocuments: { [index: number]: RelatedDocument[] };
   setRelatedDocuments: (
     messageIndex: number,
@@ -26,21 +26,19 @@ const useChatState = create<{
 }>((set) => ({
   postingMessage: false,
   setPostingMessage: (b) => set({ postingMessage: b }),
-  messages: [],
-  setMessages: (messages) => set({ messages }),
+  messages: [] as MessageContent[],
+  setMessages: (messages: MessageContent[]) => set({ messages }),
   pushMessage: (message) =>
     set((state) => ({ messages: [...state.messages, message] })),
-  editLastMessage: (content) =>
-    set((state) => ({
-      messages: produce(state.messages, (draft) => {
-        if (draft.length > 0) {
-          draft[draft.length - 1].content[0].body = content;
-        }
-      }),
-    })),
   removeLastMessage: () =>
     set((state) => ({
       messages: state.messages.slice(0, -1),
+    })),
+  replaceLastMessageContent: (content) =>
+    set((state) => ({
+      messages: produce(state.messages, (draft) => {
+        draft[draft.length - 1].content[0].body = content;
+      }),
     })),
   relatedDocuments: {},
   setRelatedDocuments: (messageIndex, documents) =>
@@ -57,14 +55,14 @@ const useChat = (alertId: string) => {
     setPostingMessage,
     setMessages,
     pushMessage,
-    editLastMessage,
     removeLastMessage,
+    replaceLastMessageContent,
     messages,
     relatedDocuments,
     // setRelatedDocuments,
   } = useChatState();
 
-  const { streamMessage, responses, error } = useChatStream();
+  const { streamMessage, error } = useChatStream();
   const { modelId, setModelId } = useModel();
 
   const chatApi = useChatApi();
@@ -75,7 +73,7 @@ const useChat = (alertId: string) => {
   } = chatApi.getConversation(alertId);
 
   useEffect(() => {
-    if (data && data.messages.length > 0) {
+    if (data) {
       setMessages(data.messages);
       if (modelId === null) {
         setModelId(data.messages[0].model);
@@ -86,7 +84,7 @@ const useChat = (alertId: string) => {
   const postChat = useCallback(
     (params: { content: string }) => {
       const { content } = params;
-      const messageContent: MessageContent = {
+      const userMessage: MessageContent = {
         role: "user",
         content: [{ body: content, contentType: "text" }],
         model: modelId,
@@ -94,31 +92,45 @@ const useChat = (alertId: string) => {
       };
 
       setPostingMessage(true);
-      pushMessage(messageContent);
+      pushMessage(userMessage);
+
+      const assistantMessage: MessageContent = {
+        role: "assistant",
+        content: [{ body: "", contentType: "text" }],
+        model: modelId,
+        usedChunks: [],
+      };
+      pushMessage(assistantMessage);
 
       const input: PostMessageRequest = {
         alertId,
-        message: messageContent,
+        message: userMessage,
       };
 
-      streamMessage(input, (response) => {
-        editLastMessage(response); // Handle each response directly
-      });
+      streamMessage(
+        input,
+        (response) => {
+          replaceLastMessageContent(response);
+        },
+        () => {
+          setPostingMessage(false);
+          mutate();
+        }
+      );
 
       if (error) {
         console.error(error);
-        removeLastMessage();
+        removeLastMessage(); // Remove assistant message
+        removeLastMessage(); // Remove user message
+        setPostingMessage(false);
       }
-
-      setPostingMessage(false);
-      mutate();
     },
     [
       alertId,
       setPostingMessage,
+      replaceLastMessageContent,
       pushMessage,
       streamMessage,
-      editLastMessage,
       removeLastMessage,
       mutate,
       modelId,
@@ -135,7 +147,11 @@ const useChat = (alertId: string) => {
   }, [messages, removeLastMessage, postChat]);
 
   const hasError = useMemo(() => {
-    return messages.length > 0 && messages[messages.length - 1].role === "user";
+    return (
+      messages &&
+      messages.length > 0 &&
+      messages[messages.length - 1]?.role === "user"
+    );
   }, [messages]);
 
   return {

@@ -90,7 +90,7 @@ function ContactCard() {
                     (person) => callees[0] && person.id === callees[0].id
                   )?.name || t("alertDetail.contactCard.selectContact")}
                 </span>
-                <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <LuChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0 md:w-[280px]">
@@ -105,7 +105,7 @@ function ContactCard() {
                         setOpenMenu(false);
                       }}
                     >
-                      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                      <span className="truncate">
                         {person.name}
                       </span>
                     </CommandItem>

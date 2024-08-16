@@ -174,7 +174,7 @@ function ChimeDialog(props: Props) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-12 w-12 rounded-full bg-white text-black"
+                  className="size-12 rounded-full bg-white text-black"
                   onClick={toggleMute}
                 >
                   {!muted ? <LuMic size="20" /> : <LuMicOff size="20" />}
@@ -183,7 +183,7 @@ function ChimeDialog(props: Props) {
                   variant="ghost"
                   size="icon"
                   type="submit"
-                  className="h-12 w-12 rounded-full bg-white text-black"
+                  className="size-12 rounded-full bg-white text-black"
                   onClick={toggleVideo}
                 >
                   {isVideoEnabled ? (
@@ -196,7 +196,7 @@ function ChimeDialog(props: Props) {
                   variant="ghost"
                   size="icon"
                   type="submit"
-                  className="h-12 w-12 rounded-full bg-rose-700 text-white"
+                  className="size-12 rounded-full bg-rose-700 text-white"
                   onClick={onClickEndCall}
                 >
                   <LuPhoneOff size="20" />
@@ -204,7 +204,7 @@ function ChimeDialog(props: Props) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-12 w-12 rounded-full bg-white text-black"
+                  className="size-12 rounded-full bg-white text-black"
                   onClick={toggleBlur}
                 >
                   {isBlurred ? <TbBlurOff size="20" /> : <TbBlur size="20" />}

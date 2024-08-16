@@ -99,7 +99,7 @@ function ChimeCalleeDialog(props: Props) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-12 w-12 rounded-full bg-green-700 text-white"
+              className="size-12 rounded-full bg-green-700 text-white"
               onClick={onClickCallOn}
             >
               <LuPhone size="20" />
@@ -108,7 +108,7 @@ function ChimeCalleeDialog(props: Props) {
               variant="ghost"
               size="icon"
               type="submit"
-              className="h-12 w-12 rounded-full bg-rose-700 text-white"
+              className="size-12 rounded-full bg-rose-700 text-white"
               onClick={onClickCallOff}
             >
               <LuPhoneOff size="20" />

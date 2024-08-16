@@ -41,6 +41,9 @@ export class AlertService {
       ] as Severity,
       comment: "",
       meetingIds: [],
+      conversation: {
+        messages: [],
+      },
     };
     return await storeAlert(alert);
   }

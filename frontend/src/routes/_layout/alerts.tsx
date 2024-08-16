@@ -52,8 +52,8 @@ function AlertPage() {
   const [sevs, setSevs] = useState<SeverityCardProps[]>([]);
 
   useEffect(() => {
-    if (!selectedTab) return;
-    if (!alerts) return;
+    if (!selectedTab) {return;}
+    if (!alerts) {return;}
     // debug purpose
     // console.log("alerts:" + JSON.str
     const updatedAlerts = alerts.map((item) => ({
@@ -174,7 +174,7 @@ function AlertPage() {
               {filteredData.length === 0 && (
                 <div className="flex min-h-52 w-full flex-col items-center justify-center">
                   {selectedTab.id == "OPEN" && (
-                    <LuCoffee className="h-28 w-28 text-slate-300" />
+                    <LuCoffee className="size-28 text-slate-300" />
                   )}
                   <span className="text-slate-400">No alerts</span>
                 </div>

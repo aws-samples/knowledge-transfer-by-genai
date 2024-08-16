@@ -22,7 +22,7 @@ const ChatMessage: React.FC<Props> = (props) => {
     <div className={`grid grid-cols-12 gap-2 p-3`}>
       <div className="order-first col-span-12 flex lg:order-none lg:col-span-8 lg:col-start-3">
         {chatContent?.role === "user" && (
-          <div className="h-min rounded bg-aws-sea-blue p-2 text-xl text-white">
+          <div className="h-min rounded-full bg-avatar p-2 text-xl text-avatar-foreground">
             <PiUserFill />
           </div>
         )}
@@ -47,7 +47,9 @@ const ChatMessage: React.FC<Props> = (props) => {
           {chatContent?.role === "assistant" && (
             <ChatMessageMarkdown
               relatedDocuments={relatedDocuments}
-              messageId={chatContent.id}
+              // messageId={chatContent.id}
+              // TODO
+              messageId="dummy"
             >
               {chatContent.content[0].body}
             </ChatMessageMarkdown>

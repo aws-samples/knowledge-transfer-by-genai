@@ -20,9 +20,9 @@ function AlertDetailCard({ item }: { item: Alert }) {
               }}
             >
               {item.status === "OPEN" ? (
-                <LuFlame className="h-5 w-5 text-white" />
+                <LuFlame className="size-5 text-white" />
               ) : (
-                <LuCheck className="h-5 w-5 text-white" />
+                <LuCheck className="size-5 text-white" />
               )}
             </span>
           </div>

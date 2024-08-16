@@ -19,7 +19,7 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
     hasError,
     retryPostChat,
     getPostedModel,
-    getRelatedDocuments,
+    // getRelatedDocuments,
   } = useChat(alertId);
 
   // Error Handling
@@ -81,7 +81,9 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
                     >
                       <ChatMessage
                         chatContent={message}
-                        relatedDocuments={getRelatedDocuments(message.id)}
+                        // relatedDocuments={getRelatedDocuments(message.id)}
+                        // TODO
+                        relatedDocuments={[]}
                       />
                       <div className="w-full border-b border-aws-squid-ink/10"></div>
                     </div>

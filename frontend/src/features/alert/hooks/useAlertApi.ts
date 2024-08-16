@@ -9,7 +9,7 @@ const useAlertApi = () => {
   return {
     getAlerts: () => {
       return http.get<Alert[]>("/alert", {
-        refreshInterval: 5000,
+        // refreshInterval: 5000,
       });
     },
 

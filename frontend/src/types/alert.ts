@@ -1,3 +1,5 @@
+import { Conversation } from "./chat";
+
 export type Status = "OPEN" | "CLOSED";
 export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
@@ -11,4 +13,5 @@ export type Alert = {
   severity: Severity;
   comment: string;
   meetingIds: string[];
+  conversation: Conversation;
 };
