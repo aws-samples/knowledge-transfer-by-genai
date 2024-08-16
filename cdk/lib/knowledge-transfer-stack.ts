@@ -7,20 +7,28 @@ import { Database } from "./constructs/database";
 import { VideoSummaryGenerator } from "./constructs/video-summary-generator";
 import { S3Buckets } from "./constructs/s3buckets";
 import { Knowledge } from "./constructs/knowledge";
-import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
-import * as cloudfrontOrigins from "aws-cdk-lib/aws-cloudfront-origins";
-import * as iam from "aws-cdk-lib/aws-iam";
-import { Frontend } from "./constructs/frontend";
+import { CloudFrontGateway } from "./constructs/cloudfront-gateway";
+import { UsEast1Stack } from "./us-east-1-stack";
+import { FunctionUrlAuthType, InvokeMode } from "aws-cdk-lib/aws-lambda";
+
+interface KnowledgeTransferStackProps extends cdk.StackProps {
+  usEast1Stack: UsEast1Stack;
+}
 
 export class KnowledgeTransferStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: KnowledgeTransferStackProps
+  ) {
     super(scope, id, props);
 
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database");
     const buckets = new S3Buckets(this, "S3Buckets");
 
-    new VideoCall(this, "VideoCall", {
+    // Video Call using Chime
+    const videoCall = new VideoCall(this, "VideoCall", {
       auth,
       recordingBucket: buckets.recordingBucket,
       concatenatedBucket: buckets.concatenatedBucket,
@@ -50,49 +58,64 @@ export class KnowledgeTransferStack extends cdk.Stack {
       knowledgeBucket: buckets.knowledgeBucket,
     });
 
-    const frontend = new Frontend(this, "Frontend", {
+    const cfgw = new CloudFrontGateway(this, "CloudFrontGateway", {
       webAclId: "TODO",
       videoBucket: buckets.concatenatedBucket,
       accessLogBucket: buckets.accessLogBucket,
+      usEast1Stack: props.usEast1Stack,
       enableIpV6: true,
     });
-    frontend.buildViteApp({
-      alertApiEndpoint: alert.api.apiEndpoint,
+    cfgw.addLambda(
+      alert.handler,
+      alert.handler.addFunctionUrl({
+        authType: FunctionUrlAuthType.AWS_IAM,
+        invokeMode: InvokeMode.RESPONSE_STREAM,
+      }),
+      "/api/*"
+    );
+    cfgw.addBucket(buckets.concatenatedBucket, "/videos/*");
+
+    cfgw.buildViteApp({
+      alertApiEndpoint: `${cfgw.getOrigin()}/api`,
+      videoCallEndpoint: videoCall.api.graphqlUrl,
       auth,
     });
 
-    new cdk.CfnOutput(this, "FrontendURL", {
-      value: frontend.getOrigin(),
-    });
-
     // // Distribution for video delivery
-    // const originAccessIdentity = new cloudfront.OriginAccessIdentity(
-    //   this,
-    //   "OAI"
-    // );
-    // const distribution = new cloudfront.Distribution(this, "Distribution", {
-    //   defaultBehavior: {
-    //     origin: new cloudfrontOrigins.S3Origin(buckets.concatenatedBucket, {
-    //       originAccessIdentity: originAccessIdentity,
-    //     }),
-    //     viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //   },
-    // });
-    // buckets.concatenatedBucket.addToResourcePolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ["s3:GetObject"],
-    //     resources: [buckets.concatenatedBucket.arnForObjects("*")],
-    //     principals: [
-    //       new iam.CanonicalUserPrincipal(
-    //         originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId
-    //       ),
-    //     ],
-    //   })
-    // );
+    // // TODO: remove
+    // {
+    //   const originAccessIdentity = new cloudfront.OriginAccessIdentity(
+    //     this,
+    //     "OAI"
+    //   );
+    //   const distribution = new cloudfront.Distribution(this, "Distribution", {
+    //     defaultBehavior: {
+    //       origin: new cloudfrontOrigins.S3Origin(buckets.concatenatedBucket, {
+    //         originAccessIdentity: originAccessIdentity,
+    //       }),
+    //       viewerProtocolPolicy:
+    //         cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+    //     },
+    //   });
+    //   buckets.concatenatedBucket.addToResourcePolicy(
+    //     new iam.PolicyStatement({
+    //       actions: ["s3:GetObject"],
+    //       resources: [buckets.concatenatedBucket.arnForObjects("*")],
+    //       principals: [
+    //         new iam.CanonicalUserPrincipal(
+    //           originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId
+    //         ),
+    //       ],
+    //     })
+    //   );
+    //   new cdk.CfnOutput(this, "DistributionDomainName", {
+    //     value: distribution.distributionDomainName,
+    //   });
+    // }
 
-    // new cdk.CfnOutput(this, "DistributionDomainName", {
-    //   value: distribution.distributionDomainName,
-    // });
+    new cdk.CfnOutput(this, "DistributionUrl", {
+      value: cfgw.getOrigin(),
+    });
 
     // // Test
     // // TODO: Remove this

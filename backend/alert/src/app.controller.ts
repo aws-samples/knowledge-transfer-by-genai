@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Body,
+  Sse,
 } from "@nestjs/common";
 import { AppService } from "./app.service";
 import {
@@ -14,6 +15,7 @@ import {
   Meeting,
   Status,
 } from "@industrial-knowledge-transfer-by-genai/common";
+import { interval, map } from "rxjs";
 
 @Controller()
 export class AppController {
@@ -75,5 +77,10 @@ export class AppController {
   @Get("/meeting/:meetingId")
   async getMeeting(@Param("meetingId") meetingId: string): Promise<Meeting> {
     return await this.appService.getMeeting(meetingId);
+  }
+
+  @Sse("/sse-test")
+  sse() {
+    return interval(1000).pipe(map(() => ({ data: { value: Math.random() } })));
   }
 }

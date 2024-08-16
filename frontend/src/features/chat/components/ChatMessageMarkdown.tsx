@@ -1,11 +1,11 @@
 import React, { ReactNode, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+// import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import ButtonCopy from "./ButtonCopy";
-import { RelatedDocument } from "../@types/conversation";
+// import ButtonCopy from "./ButtonCopy";
+import { RelatedDocument } from "@/types/chat";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
 import { create } from "zustand";
@@ -14,7 +14,7 @@ import rehypeExternalLinks, { Options } from "rehype-external-links";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
-import { onlyText } from "react-children-utilities";
+// import { onlyText } from "react-children-utilities";
 
 type Props = {
   children: string;
@@ -149,24 +149,28 @@ const ChatMessageMarkdown: React.FC<Props> = ({
         // @ts-ignore
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         code({ node, inline, className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || "");
-          const codeText = onlyText(children).replace(/\n$/, "");
-
-          return !inline && match ? (
-            <CopyToClipboard codeText={codeText}>
-              <SyntaxHighlighter
-                {...props}
-                children={codeText}
-                style={vscDarkPlus}
-                language={match[1]}
-                PreTag="div"
-                wrapLongLines={true}
-              />
-            </CopyToClipboard>
-          ) : (
+          return (
             <code {...props} className={className}>
               {children}
             </code>
+            // const match = /language-(\w+)/.exec(className || "");
+            // const codeText = onlyText(children).replace(/\n$/, "");
+
+            // return !inline && match ? (
+            //   <CopyToClipboard codeText={codeText}>
+            //     <SyntaxHighlighter
+            //       // {...props}
+            //       children={codeText}
+            //       style={vscDarkPlus}
+            //       language={match[1]}
+            //       PreTag="div"
+            //       wrapLongLines={true}
+            //     />
+            //   </CopyToClipboard>
+            // ) : (
+            //   <code {...props} className={className}>
+            //     {children}
+            //   </code>
           );
         },
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -230,19 +234,19 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   );
 };
 
-const CopyToClipboard = ({
-  children,
-  codeText,
-}: {
-  children: React.ReactNode;
-  codeText: string;
-}) => {
-  return (
-    <div className="relative">
-      {children}
-      <ButtonCopy text={codeText} className="absolute right-2 top-2" />
-    </div>
-  );
-};
+// const CopyToClipboard = ({
+//   children,
+//   codeText,
+// }: {
+//   children: React.ReactNode;
+//   codeText: string;
+// }) => {
+//   return (
+//     <div className="relative">
+//       {children}
+//       <ButtonCopy text={codeText} className="absolute right-2 top-2" />
+//     </div>
+//   );
+// };
 
 export default ChatMessageMarkdown;
