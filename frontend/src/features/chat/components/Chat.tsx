@@ -7,7 +7,8 @@ import { useTranslation } from "react-i18next";
 import { PiWarningCircleFill } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 
-const Chat: React.FC = () => {
+const Chat: React.FC<{ alertId: string }> = (props) => {
+  const { alertId } = props;
   const { t } = useTranslation();
 
   const {
@@ -17,10 +18,9 @@ const Chat: React.FC = () => {
     messages,
     hasError,
     retryPostChat,
-    regenerate,
     getPostedModel,
     getRelatedDocuments,
-  } = useChat();
+  } = useChat(alertId);
 
   // Error Handling
   useEffect(() => {
@@ -46,19 +46,11 @@ const Chat: React.FC = () => {
     [postChat]
   );
 
-  const onRegenerate = useCallback(() => {
-    regenerate({});
-  }, [regenerate]);
-
   return (
     <div className="relative flex h-full flex-1 flex-col">
       <div className="flex-1 overflow-hidden">
         <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper p-2">
-          <div className="flex w-full justify-between">
-            <div className="p-2">
-              <div className="mr-10 font-bold">{t("bot.label.normalChat")}</div>
-            </div>
-          </div>
+          <div className="flex w-full justify-between"></div>
           {getPostedModel() && (
             <div className="absolute right-2 top-10 text-xs text-dark-gray">
               model: {getPostedModel()}
@@ -119,7 +111,6 @@ const Chat: React.FC = () => {
           disabledRegenerate={postingMessage || hasError}
           isLoading={postingMessage}
           onSend={onSend}
-          onRegenerate={onRegenerate}
         />
       </div>
     </div>

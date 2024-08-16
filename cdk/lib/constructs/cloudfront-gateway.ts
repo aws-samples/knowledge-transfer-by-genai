@@ -15,16 +15,12 @@ import {
 import {
   AllowedMethods,
   CachePolicy,
-  // CloudFrontWebDistribution,
   OriginAccessIdentity,
   CfnOriginAccessControl,
   Distribution,
   LambdaEdgeEventType,
   OriginRequestPolicy,
   ViewerProtocolPolicy,
-  CacheQueryStringBehavior,
-  CacheHeaderBehavior,
-  CacheCookieBehavior,
 } from "aws-cdk-lib/aws-cloudfront";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";

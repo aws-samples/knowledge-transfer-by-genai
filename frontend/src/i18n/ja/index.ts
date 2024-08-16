@@ -2,6 +2,11 @@ const translation = {
   translation: {
     app: {
       title: "生成AIによる技能伝承",
+      name: "生成AIによる技能伝承",
+      inputMessage: "追加メッセージを入力",
+    },
+    button: {
+      resend: "再送信",
     },
     alertDashboard: {
       status: {

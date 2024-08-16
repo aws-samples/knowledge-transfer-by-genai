@@ -64,13 +64,7 @@ function AlertDetailPage(props: ComponentProps) {
           </ScrollArea>
         </div>
         <div className="relative flex flex-col bg-secondary">
-          {alert && (
-            <Chat
-            // conversationId={alert.conversation_id}
-            // onStartConversation={onStartConversation}
-            // alertCategory={alert.category}
-            />
-          )}
+          {alert && <Chat alertId={alert.id} />}
         </div>
       </div>
       <ChimeDialog myName={user?.username!} alertId={alert?.id ?? ""} />

@@ -18,7 +18,6 @@ type Props = {
   placeholder?: string;
   isLoading: boolean;
   onSend: (content: string, base64EncodedImages?: string[]) => void;
-  onRegenerate: () => void;
 };
 
 export const TextInputChatContent = forwardRef<HTMLElement, Props>(
