@@ -6,6 +6,7 @@ const hashPayload = (payload: Buffer) => {
 };
 
 export const handler: CloudFrontRequestHandler = async (event) => {
+  // Todo: replace with congito auth
   const request = event.Records[0].cf.request;
   const body = request.body?.data ?? "";
 

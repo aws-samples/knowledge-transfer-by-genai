@@ -73,55 +73,15 @@ export class KnowledgeTransferStack extends cdk.Stack {
       }),
       "/api/*"
     );
-    cfgw.addBucket(buckets.concatenatedBucket, "/videos/*");
-
+    cfgw.addBucket(buckets.concatenatedBucket, "/video/*");
     cfgw.buildViteApp({
       alertApiEndpoint: `${cfgw.getOrigin()}/api`,
       videoCallEndpoint: videoCall.api.graphqlUrl,
       auth,
     });
 
-    // // Distribution for video delivery
-    // // TODO: remove
-    // {
-    //   const originAccessIdentity = new cloudfront.OriginAccessIdentity(
-    //     this,
-    //     "OAI"
-    //   );
-    //   const distribution = new cloudfront.Distribution(this, "Distribution", {
-    //     defaultBehavior: {
-    //       origin: new cloudfrontOrigins.S3Origin(buckets.concatenatedBucket, {
-    //         originAccessIdentity: originAccessIdentity,
-    //       }),
-    //       viewerProtocolPolicy:
-    //         cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-    //     },
-    //   });
-    //   buckets.concatenatedBucket.addToResourcePolicy(
-    //     new iam.PolicyStatement({
-    //       actions: ["s3:GetObject"],
-    //       resources: [buckets.concatenatedBucket.arnForObjects("*")],
-    //       principals: [
-    //         new iam.CanonicalUserPrincipal(
-    //           originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId
-    //         ),
-    //       ],
-    //     })
-    //   );
-    //   new cdk.CfnOutput(this, "DistributionDomainName", {
-    //     value: distribution.distributionDomainName,
-    //   });
-    // }
-
     new cdk.CfnOutput(this, "DistributionUrl", {
       value: cfgw.getOrigin(),
     });
-
-    // // Test
-    // // TODO: Remove this
-    // const videoConcat = new VideoConcat(this, "VideoConcat", {
-    //   concatenatedBucket: buckets.concatenatedBucket,
-    //   database,
-    // });
   }
 }
