@@ -35,6 +35,7 @@ const DEFAULT_JA_ANALYZER: Analyzer = {
 };
 
 export class Knowledge extends Construct {
+  readonly knowledgeBaseId: string;
   constructor(scope: Construct, id: string, props: KnowledgeProps) {
     super(scope, id);
 
@@ -85,6 +86,8 @@ export class Knowledge extends Construct {
       maxTokens,
       overlapPercentage,
     });
+
+    this.knowledgeBaseId = kb.knowledgeBaseId;
 
     new CfnOutput(this, "KnowledgeBaseId", {
       value: kb.knowledgeBaseId,

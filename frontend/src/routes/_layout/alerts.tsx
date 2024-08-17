@@ -52,8 +52,12 @@ function AlertPage() {
   const [sevs, setSevs] = useState<SeverityCardProps[]>([]);
 
   useEffect(() => {
-    if (!selectedTab) {return;}
-    if (!alerts) {return;}
+    if (!selectedTab) {
+      return;
+    }
+    if (!alerts) {
+      return;
+    }
     // debug purpose
     // console.log("alerts:" + JSON.str
     const updatedAlerts = alerts.map((item) => ({
@@ -72,7 +76,8 @@ function AlertPage() {
       }
       return isVisible;
     });
-    console.log("Filtered Data: ", JSON.stringify(filteredAlerts));
+    // TODO: remove
+    // console.log("Filtered Data: ", JSON.stringify(filteredAlerts));
     setFilteredData(filteredAlerts);
 
     const severityCounts = (["CRITICAL", "HIGH", "MEDIUM", "LOW"] as Severity[])

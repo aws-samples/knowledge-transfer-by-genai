@@ -110,6 +110,7 @@ const useChat = (alertId: string) => {
       streamMessage(
         input,
         (response) => {
+          console.log(response);
           replaceLastMessageContent(response);
         },
         () => {

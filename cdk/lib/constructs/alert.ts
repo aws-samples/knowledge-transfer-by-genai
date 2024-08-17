@@ -18,10 +18,12 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import { Database } from "./database";
 import { CloudFrontGateway } from "./cloudfront-gateway";
+import { Knowledge } from "./knowledge";
 
 export interface AlertProps {
   auth: Auth;
   database: Database;
+  knowledge: Knowledge;
   readonly corsAllowOrigins?: string[];
 }
 
@@ -50,6 +52,9 @@ export class Alert extends Construct {
         MEETING_TABLE_NAME: props.database.meetingTable.tableName,
         CHAT_TABLE_NAME: props.database.chatTable.tableName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
+        KNOWLEDGE_BASE_ID: props.knowledge.knowledgeBaseId,
+        BEDROCK_REGION: "us-west-2",
+        BEDROCK_AGENT_REGION: Stack.of(props.knowledge).region,
       },
     });
     database.alertTable.grantReadWriteData(handler.role!);

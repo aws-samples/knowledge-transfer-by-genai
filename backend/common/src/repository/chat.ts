@@ -27,7 +27,9 @@ export class ChatRepository {
 
     if (res.Items && res.Items.length > 0) {
       console.log(
-        `Conversation found: ${JSON.stringify(res.Items[0].conversation)}`
+        `Conversation found. Number of messages: ${
+          (res.Items[0] as Alert).conversation.messages.length
+        }`
       );
       const alert = res.Items[0] as Alert;
       return alert.conversation;
@@ -50,7 +52,7 @@ export class ChatRepository {
     alertId: string,
     conversation: Conversation
   ): Promise<void> {
-    console.log(`Storing conversation: ${JSON.stringify(conversation)}`);
+    console.log(`Storing conversation with alertId ${alertId}`);
     await dynamoDbDocument.send(
       new UpdateCommand({
         TableName: ALERT_TABLE_NAME,

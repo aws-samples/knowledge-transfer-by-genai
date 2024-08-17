@@ -35,10 +35,16 @@ export class KnowledgeTransferStack extends cdk.Stack {
       database,
     });
 
+    // Knowledge Base
+    const knowledge = new Knowledge(this, "Knowledge", {
+      knowledgeBucket: buckets.knowledgeBucket,
+    });
+
     // Alert Apis
     const alert = new Alert(this, "Alert", {
       auth,
       database,
+      knowledge,
     });
 
     // Video summarizer
@@ -53,11 +59,6 @@ export class KnowledgeTransferStack extends cdk.Stack {
       }
     );
 
-    // Knowledge
-    const knowledge = new Knowledge(this, "Knowledge", {
-      knowledgeBucket: buckets.knowledgeBucket,
-    });
-
     const cfgw = new CloudFrontGateway(this, "CloudFrontGateway", {
       webAclId: "TODO",
       videoBucket: buckets.concatenatedBucket,
@@ -65,6 +66,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
       usEast1Stack: props.usEast1Stack,
       enableIpV6: true,
     });
+    // Associate lambda with cloudfront
     cfgw.addLambda(
       alert.handler,
       alert.handler.addFunctionUrl({
@@ -73,7 +75,9 @@ export class KnowledgeTransferStack extends cdk.Stack {
       }),
       "/api/*"
     );
+    // Associate video recording bucket with cloudfront
     cfgw.addBucket(buckets.concatenatedBucket, "/video/*");
+
     cfgw.buildViteApp({
       alertApiEndpoint: `${cfgw.getOrigin()}/api`,
       videoCallEndpoint: videoCall.api.graphqlUrl,
