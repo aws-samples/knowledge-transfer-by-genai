@@ -70,6 +70,7 @@ export class Knowledge extends Construct {
     });
 
     const kb = new KnowledgeBase(this, "KB", {
+      description: "Industrial Knowledge Transfer By GenAI",
       embeddingsModel,
       vectorStore: vectorCollection,
       vectorIndex: vectorIndex,

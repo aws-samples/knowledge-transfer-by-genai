@@ -54,6 +54,15 @@ export class Alert extends Construct {
     });
     database.alertTable.grantReadWriteData(handler.role!);
     database.meetingTable.grantReadWriteData(handler.role!);
+    handler.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream",
+        ],
+        resources: ["*"],
+      })
+    );
 
     this.handler = handler;
 

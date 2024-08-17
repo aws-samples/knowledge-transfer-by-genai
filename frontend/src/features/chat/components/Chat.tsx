@@ -6,6 +6,7 @@ import useScroll from "../hooks/useScroll";
 import { useTranslation } from "react-i18next";
 import { PiWarningCircleFill } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
+import SwitchBedrockModel from "./SwitchBedrockModel";
 
 const Chat: React.FC<{ alertId: string }> = (props) => {
   const { alertId } = props;
@@ -66,6 +67,7 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
             >
               {messages?.length === 0 ? (
                 <div className="relative flex w-full justify-center">
+                  <SwitchBedrockModel />
                   <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
                     {t("app.name")}
                   </div>
