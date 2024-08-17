@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react";
 import useChatApi from "./useChatApi";
 import { produce } from "immer";
-import {
-  MessageContent,
-  PostMessageRequest,
-  RelatedDocument,
-} from "@/types/chat";
+import { MessageContent, PostMessageRequest } from "@/types/chat";
 import { create } from "zustand";
 import { useChatStream } from "./useChatStream";
 import useModel from "./useModel";
@@ -18,11 +14,6 @@ const useChatState = create<{
   pushMessage: (message: MessageContent) => void;
   removeLastMessage: () => void;
   replaceLastMessageContent: (content: string) => void;
-  relatedDocuments: { [index: number]: RelatedDocument[] };
-  setRelatedDocuments: (
-    messageIndex: number,
-    documents: RelatedDocument[]
-  ) => void;
 }>((set) => ({
   postingMessage: false,
   setPostingMessage: (b) => set({ postingMessage: b }),
@@ -40,13 +31,6 @@ const useChatState = create<{
         draft[draft.length - 1].content[0].body = content;
       }),
     })),
-  relatedDocuments: {},
-  setRelatedDocuments: (messageIndex, documents) =>
-    set((state) => ({
-      relatedDocuments: produce(state.relatedDocuments, (draft) => {
-        draft[messageIndex] = documents;
-      }),
-    })),
 }));
 
 const useChat = (alertId: string) => {
@@ -58,8 +42,6 @@ const useChat = (alertId: string) => {
     removeLastMessage,
     replaceLastMessageContent,
     messages,
-    relatedDocuments,
-    // setRelatedDocuments,
   } = useChatState();
 
   const { streamMessage, error } = useChatStream();
@@ -73,13 +55,14 @@ const useChat = (alertId: string) => {
   } = chatApi.getConversation(alertId);
 
   useEffect(() => {
-    if (data) {
+    // Reset message when alertId changes
+    setMessages([]);
+
+    if (data && data.messages && data.messages.length > 0) {
       setMessages(data.messages);
-      if (modelId === null) {
-        setModelId(data.messages[0].model);
-      }
+      setModelId(data.messages[0].model);
     }
-  }, [data, setMessages, modelId, setModelId]);
+  }, [alertId, data, setMessages, modelId, setModelId]);
 
   const postChat = useCallback(
     (params: { content: string }) => {
@@ -110,7 +93,6 @@ const useChat = (alertId: string) => {
       streamMessage(
         input,
         (response) => {
-          console.log(response);
           replaceLastMessageContent(response);
         },
         () => {
@@ -163,8 +145,6 @@ const useChat = (alertId: string) => {
     hasError,
     retryPostChat,
     getPostedModel: () => modelId,
-    getRelatedDocuments: (messageIndex: number) =>
-      relatedDocuments[messageIndex] ?? [],
   };
 };
 

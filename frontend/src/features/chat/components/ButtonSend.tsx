@@ -1,9 +1,11 @@
 import React from "react";
 import { PiPaperPlaneRightFill, PiSpinnerGap } from "react-icons/pi";
+import { BaseProps } from "@/features/chat/types/common";
+import { Button } from "@/components/ui/button";
 
 import { twMerge } from "tailwind-merge";
 
-type Props = {
+type Props = BaseProps & {
   disabled?: boolean;
   loading?: boolean;
   onClick: () => void;
@@ -11,11 +13,10 @@ type Props = {
 
 const ButtonSend: React.FC<Props> = (props) => {
   return (
-    <button
-      className={twMerge(
-        "m-2 align-bottom flex items-center justify-center rounded-xl bg-aws-sea-blue  p-2 text-xl  text-white hover:bg-aws-sea-blue-hover",
-        props.disabled ? "opacity-30" : ""
-      )}
+    <Button
+      variant="default"
+      size="icon"
+      className={twMerge("rounded-xl border-primary text-xl", props.className)}
       onClick={props.onClick}
       disabled={props.disabled || props.loading}
     >
@@ -24,7 +25,7 @@ const ButtonSend: React.FC<Props> = (props) => {
       ) : (
         <PiPaperPlaneRightFill />
       )}
-    </button>
+    </Button>
   );
 };
 

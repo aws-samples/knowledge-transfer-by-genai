@@ -8,19 +8,14 @@ const SwitchBedrockModel: React.FC = () => {
   return (
     <div
       className={twMerge(
-        "mt-3 w-min",
-        "flex justify-center gap-2 rounded-lg border border-light-gray bg-light-gray p-1 text-sm"
+        "mt-0 w-min",
+        "flex justify-center gap-2 rounded-lg  bg-primary-foreground p-1 text-sm"
       )}
     >
       {availableModels.map((availableModel) => (
         <Button
           key={availableModel.modelId}
-          className={twMerge(
-            "flex w-40 flex-1 items-center rounded-lg p-2",
-            modelId === availableModel.modelId
-              ? ""
-              : "border-light-gray bg-white text-dark-gray"
-          )}
+          variant={modelId === availableModel.modelId ? "default" : "outline"}
           onClick={() => setModelId(availableModel.modelId)}
           children={<span>{availableModel.label}</span>}
         />

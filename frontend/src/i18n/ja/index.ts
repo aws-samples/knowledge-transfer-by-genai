@@ -3,7 +3,7 @@ const translation = {
     app: {
       title: "生成AIによる技能伝承",
       name: "生成AIによる技能伝承",
-      inputMessage: "追加メッセージを入力",
+      inputMessage: "入力してください",
     },
     button: {
       resend: "再送信",
@@ -24,6 +24,9 @@ const translation = {
     alertDetail: {
       contactCard: {
         selectContact: "選択...",
+      },
+      chat: {
+        referenceLink: "参考リンク",
       },
     },
   },

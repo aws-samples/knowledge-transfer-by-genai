@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
+import { BaseProps } from "@/features/chat/types/common";
 import { twMerge } from "tailwind-merge";
 
-type Props = {
+type Props = BaseProps & {
   value?: string;
   label?: string;
   placeholder?: string;
@@ -35,9 +36,7 @@ const Textarea = forwardRef<HTMLElement, Props>((props, focusInputRef) => {
   }, [props.value]);
 
   return (
-    <div
-      className={`m-1  bg-transparent pr-6 scrollbar-thin scrollbar-thumb-light-gray flex w-full flex-col`}
-    >
+    <div className={`${props.className ?? ""} flex w-full flex-col`}>
       <textarea
         ref={(element) => {
           ref.current = element;
@@ -52,7 +51,8 @@ const Textarea = forwardRef<HTMLElement, Props>((props, focusInputRef) => {
         className={twMerge(
           "peer w-full resize-none rounded p-1.5 outline-none",
           isMax ? "overflow-y-auto" : "overflow-hidden",
-          props.noBorder ? "" : "border border-aws-font-color/50"
+          props.noBorder ? "" : "border border-aws-font-color/50",
+          props.className
         )}
         rows={props.rows ?? 1}
         placeholder={props.placeholder}

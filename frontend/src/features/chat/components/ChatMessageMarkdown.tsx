@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 // import ButtonCopy from "./ButtonCopy";
-import { RelatedDocument } from "@/types/chat";
+import { UsedChunk } from "@/types/chat";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
 import { create } from "zustand";
@@ -18,8 +18,8 @@ import "katex/dist/katex.min.css";
 
 type Props = {
   children: string;
-  relatedDocuments?: RelatedDocument[];
-  messageId: string;
+  relatedDocuments?: UsedChunk[];
+  messageIdx: number;
 };
 
 const useMarkdownState = create<{
@@ -39,7 +39,7 @@ const useMarkdownState = create<{
 }));
 
 const RelatedDocumentLink: React.FC<{
-  relatedDocument?: RelatedDocument;
+  relatedDocument?: UsedChunk;
   linkId: string;
   children: ReactNode;
 }> = (props) => {
@@ -47,7 +47,7 @@ const RelatedDocumentLink: React.FC<{
   const { isOpenReference, setIsOpenReference } = useMarkdownState();
 
   const linkUrl = useMemo(() => {
-    const url = props.relatedDocument?.sourceLink;
+    const url = props.relatedDocument?.source;
     if (url) {
       if (props.relatedDocument?.contentType === "s3") {
         return decodeURIComponent(url.split("?")[0].split("/").pop() ?? "");
@@ -56,7 +56,7 @@ const RelatedDocumentLink: React.FC<{
       }
     }
     return "";
-  }, [props.relatedDocument?.contentType, props.relatedDocument?.sourceLink]);
+  }, [props.relatedDocument?.contentType, props.relatedDocument?.source]);
 
   return (
     <>
@@ -64,8 +64,8 @@ const RelatedDocumentLink: React.FC<{
         className={twMerge(
           "mx-0.5 ",
           props.relatedDocument
-            ? "cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover"
-            : "cursor-not-allowed text-gray"
+            ? "cursor-pointer text-destructive"
+            : "text-gray cursor-not-allowed"
         )}
         onClick={() => {
           setIsOpenReference(props.linkId, !isOpenReference[props.linkId]);
@@ -78,28 +78,28 @@ const RelatedDocumentLink: React.FC<{
         <div
           className={twMerge(
             isOpenReference[props.linkId] ? "visible" : "invisible",
-            "fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink/20 transition duration-1000"
+            "fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-primary/20 transition duration-1000"
           )}
           onClick={() => {
             setIsOpenReference(props.linkId, false);
           }}
         >
           <div
-            className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink p-1 text-sm text-aws-font-color-white"
+            className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-primary p-1 text-sm text-primary-foreground"
             onClick={(e) => {
               e.stopPropagation();
             }}
           >
-            {props.relatedDocument.chunkBody.split("\n").map((s, idx) => (
+            {props.relatedDocument.content.split("\n").map((s, idx) => (
               <div key={idx}>{s}</div>
             ))}
 
             <div className="my-1 border-t pt-1 italic">
-              {t("bot.label.referenceLink")}:
+              {t("alertDetail.chat.referenceLink")}:
               <span
                 className="ml-1 cursor-pointer underline"
                 onClick={() => {
-                  window.open(props.relatedDocument?.sourceLink, "_blank");
+                  window.open(props.relatedDocument?.source, "_blank");
                 }}
               >
                 {linkUrl}
@@ -115,7 +115,7 @@ const RelatedDocumentLink: React.FC<{
 const ChatMessageMarkdown: React.FC<Props> = ({
   children,
   relatedDocuments,
-  messageId,
+  messageIdx,
 }) => {
   const text = useMemo(() => {
     const results = children.match(/\[\^(?<number>[\d])+?\]/g);
@@ -138,7 +138,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
 
   return (
     <ReactMarkdown
-      className="prose max-w-full break-all"
+      className="prose max-w-full break-all leading-relaxed"
       children={text}
       remarkPlugins={remarkPlugins}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -176,44 +176,35 @@ const ChatMessageMarkdown: React.FC<Props> = ({
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         sup({ className, children }) {
+          const childArray = Array.isArray(children) ? children : [children];
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
             <sup className={className}>
-              {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                children.map((child, idx) => {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  if (child?.props["data-footnote-ref"]) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    const href: string = child.props.href ?? "";
-                    if (/#user-content-fn-[\d]+/.test(href ?? "")) {
-                      const docNo = Number.parseInt(
-                        href.replace("#user-content-fn-", "")
-                      );
-                      const doc = relatedDocuments?.filter(
-                        (doc) => doc.rank === docNo
-                      )[0];
+              {childArray.map((child, idx) => {
+                if (child?.props["data-footnote-ref"]) {
+                  const href: string = child.props.href ?? "";
+                  if (/#user-content-fn-[\d]+/.test(href)) {
+                    const docNo = Number.parseInt(
+                      href.replace("#user-content-fn-", "")
+                    );
+                    const doc = relatedDocuments?.find(
+                      (doc) => doc.rank === docNo
+                    );
 
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-ignore
-                      const refNo = child.props.children[0];
-                      return (
-                        <RelatedDocumentLink
-                          key={`${idx}-${docNo}`}
-                          linkId={`${messageId}-${idx}-${docNo}`}
-                          relatedDocument={doc}
-                        >
-                          [{refNo}]
-                        </RelatedDocumentLink>
-                      );
-                    }
+                    const refNo = child.props.children[0];
+                    return (
+                      <RelatedDocumentLink
+                        key={`${messageIdx}-${idx}-${docNo}`}
+                        linkId={`${messageIdx}-${idx}-${docNo}`}
+                        relatedDocument={doc}
+                      >
+                        [{refNo}]
+                      </RelatedDocumentLink>
+                    );
                   }
-                  return child;
-                })
-              }
+                }
+                return child;
+              })}
             </sup>
           );
         },

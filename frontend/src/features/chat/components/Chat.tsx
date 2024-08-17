@@ -20,7 +20,6 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
     hasError,
     retryPostChat,
     getPostedModel,
-    // getRelatedDocuments,
   } = useChat(alertId);
 
   // Error Handling
@@ -50,10 +49,10 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
   return (
     <div className="relative flex h-full flex-1 flex-col">
       <div className="flex-1 overflow-hidden">
-        <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper p-2">
+        <div className="sticky top-0 z-10 mb-1.5 flex h-8 w-full items-center justify-between border-b border-gray bg-aws-paper p-2">
           <div className="flex w-full justify-between"></div>
           {getPostedModel() && (
-            <div className="absolute right-2 top-10 text-xs text-dark-gray">
+            <div className="absolute right-2 top-2 text-xs text-dark-gray">
               model: {getPostedModel()}
             </div>
           )}
@@ -67,8 +66,10 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
             >
               {messages?.length === 0 ? (
                 <div className="relative flex w-full justify-center">
-                  <SwitchBedrockModel />
-                  <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
+                  <div className="absolute my-0">
+                    <SwitchBedrockModel />
+                  </div>
+                  <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-medium text-gray-400">
                     {t("app.name")}
                   </div>
                 </div>
@@ -82,10 +83,9 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
                       }`}
                     >
                       <ChatMessage
+                        messageIdx={idx}
                         chatContent={message}
-                        // relatedDocuments={getRelatedDocuments(message.id)}
-                        // TODO
-                        relatedDocuments={[]}
+                        relatedDocuments={message.usedChunks}
                       />
                       <div className="w-full border-b border-aws-squid-ink/10"></div>
                     </div>
@@ -112,7 +112,6 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
       <div className="bottom-0 z-0 flex w-full flex-col items-center justify-center">
         <TextInputChatContent
           disabledSend={postingMessage || hasError}
-          disabledRegenerate={postingMessage || hasError}
           isLoading={postingMessage}
           onSend={onSend}
         />

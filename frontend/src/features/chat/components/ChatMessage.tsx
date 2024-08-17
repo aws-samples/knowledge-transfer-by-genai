@@ -1,15 +1,16 @@
 import React, { useMemo } from "react";
 import ChatMessageMarkdown from "./ChatMessageMarkdown";
 import { PiUserFill } from "react-icons/pi";
-import { MessageContent, RelatedDocument } from "@/types/chat";
+import { MessageContent, UsedChunk } from "@/types/chat";
 
 type Props = {
+  messageIdx: number;
   chatContent?: MessageContent;
-  relatedDocuments?: RelatedDocument[];
+  relatedDocuments?: UsedChunk[];
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
-  const relatedDocuments = useMemo<RelatedDocument[] | undefined>(
+  const relatedDocuments = useMemo<UsedChunk[] | undefined>(
     () => props.relatedDocuments,
     [props]
   );
@@ -47,9 +48,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           {chatContent?.role === "assistant" && (
             <ChatMessageMarkdown
               relatedDocuments={relatedDocuments}
-              // messageId={chatContent.id}
-              // TODO
-              messageId="dummy"
+              messageIdx={props.messageIdx}
             >
               {chatContent.content[0].body}
             </ChatMessageMarkdown>
