@@ -2,7 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as iam from "aws-cdk-lib/aws-iam";
-import { IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda";
+import { Function, IVersion, Runtime, Version } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
 import * as path from "path";
@@ -21,6 +21,7 @@ interface UsEast1StackProps extends cdk.StackProps {
 export class UsEast1Stack extends cdk.Stack {
   public readonly webAclArn: cdk.CfnOutput;
   public readonly ipV6Enabled: boolean;
+  // public readonly authFunction: Function;
   private readonly functionVersionParameter: ssm.StringParameter;
   constructor(scope: Construct, id: string, props: UsEast1StackProps) {
     super(scope, id, props);
@@ -88,6 +89,7 @@ export class UsEast1Stack extends cdk.Stack {
       (authFunction.role as iam.Role).assumeRolePolicy!.addStatements(
         statement
       );
+      // this.authFunction = authFunction;
     }
 
     // WAF resources
@@ -205,4 +207,11 @@ export class UsEast1Stack extends cdk.Stack {
       lookup.getResponseField("Parameter.Value")
     );
   }
+
+  // public addAuthFuncEnvironment(environment: { [key: string]: string }): void {
+  //   // Add the environment variables to the Auth Lambda function
+  //   Object.entries(environment).forEach(([key, value]) => {
+  //     this.authFunction.addEnvironment(key, value);
+  //   });
+  // }
 }

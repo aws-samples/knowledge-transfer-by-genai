@@ -98,10 +98,11 @@ export class KnowledgeTransferStack extends cdk.Stack {
         authType: FunctionUrlAuthType.AWS_IAM,
         invokeMode: InvokeMode.RESPONSE_STREAM,
       }),
-      "/api/*"
+      "/api/*",
+      auth
     );
     // Associate video recording bucket with cloudfront
-    cfgw.addBucket(buckets.concatenatedBucket, "/video/*");
+    cfgw.addBucket(buckets.concatenatedBucket, "/video/*", auth);
 
     cfgw.buildViteApp({
       alertApiEndpoint: `${cfgw.getOrigin()}/api`,

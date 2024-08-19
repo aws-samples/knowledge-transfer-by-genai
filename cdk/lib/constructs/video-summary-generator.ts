@@ -245,53 +245,9 @@ export class VideoSummaryGenerator extends Construct {
       resultPath: "$.InvokeBedrockResult",
     });
 
-    // const bedrockModelStatus = new sfn.Choice(this, "Bedrock Model Status");
-
     const success = new sfn.Succeed(this, "Success");
     const processFailed = new sfn.Fail(this, "Process Failed");
 
-    // const stateMachine = new sfn.StateMachine(
-    //   this,
-    //   "SummaryGeneratorStateMachine",
-    //   {
-    //     definitionBody: sfn.DefinitionBody.fromChainable(
-    //       prepareInput
-    //         .next(startTranscriptionJob)
-    //         .next(waitForTranscriptionJob)
-    //         .next(getTranscriptionJobStatus)
-    //         .next(
-    //           new sfn.Choice(this, "TranscriptionJobStatusChoice")
-    //             .when(
-    //               sfn.Condition.stringEquals(
-    //                 "$.TranscriptionJob.TranscriptionJob.TranscriptionJobStatus",
-    //                 "COMPLETED"
-    //               ),
-    //               formatTranscription
-    //                 .next(invokeBedrockModel)
-    //                 .next(
-    //                   bedrockModelStatus
-    //                     .when(
-    //                       sfn.Condition.stringMatches(
-    //                         "$.InvokeBedrockResult.Payload.status",
-    //                         "SUCCEEDED"
-    //                       ),
-    //                       success
-    //                     )
-    //                     .otherwise(processFailed)
-    //                 )
-    //             )
-    //             .when(
-    //               sfn.Condition.stringEquals(
-    //                 "$.TranscriptionJob.TranscriptionJob.TranscriptionJobStatus",
-    //                 "FAILED"
-    //               ),
-    //               processFailed
-    //             )
-    //             .otherwise(waitForTranscriptionJob)
-    //         )
-    //     ),
-    //   }
-    // );
     const stateMachine = new sfn.StateMachine(
       this,
       "SummaryGeneratorStateMachine",

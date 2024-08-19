@@ -1,6 +1,8 @@
 import { PostMessageRequest } from "@/types/chat";
 import { useState } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { fetchAuthSession } from "aws-amplify/auth";
+
 export function useChatStream() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -17,12 +19,16 @@ export function useChatStream() {
     let accumulatedMessage = "";
 
     try {
+      const session = await fetchAuthSession();
+      const idToken = session.tokens?.idToken;
+
       await fetchEventSource(
         `${import.meta.env.VITE_APP_ALERT_API_ENDPOINT}/chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
           },
           body: JSON.stringify(postMessageRequest),
           signal: controller.signal,
@@ -33,8 +39,6 @@ export function useChatStream() {
             // Connection is open, proceed as normal
           },
           onmessage(event) {
-            // TODO: remove this log
-            console.log("Received message", event.data);
             accumulatedMessage += event.data;
             onMessage(accumulatedMessage);
           },

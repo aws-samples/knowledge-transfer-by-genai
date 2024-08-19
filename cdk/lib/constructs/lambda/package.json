@@ -1,0 +1,21 @@
+{
+  "name": "lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-jwt-verify": "^4.0.1",
+    "aws-lambda": "^1.0.7",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.143",
+    "@types/jsonwebtoken": "^9.0.6"
+  }
+}

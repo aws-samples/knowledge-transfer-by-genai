@@ -149,7 +149,7 @@ export class CloudFrontGateway extends Construct {
     ]);
   }
 
-  addBucket(bucket: IBucket, path: string) {
+  addBucket(bucket: IBucket, path: string, auth: Auth) {
     bucket.addToResourcePolicy(
       new PolicyStatement({
         actions: ["s3:GetObject"],
@@ -161,13 +161,38 @@ export class CloudFrontGateway extends Construct {
         ],
       })
     );
+    const cfnDistribution = this.distribution.node.defaultChild as CfnResource;
+
+    // Note: Lambda@Edge does not support environment variables, so we need to pass them via headers
+    const headers = [
+      { name: "X-User-Pool-Region", value: Stack.of(auth.userPool).region },
+      { name: "X-User-Pool-Id", value: auth.userPool.userPoolId },
+      { name: "X-User-Pool-App-Id", value: auth.client.userPoolClientId },
+    ];
+    const originCustomHeaders = headers.map((header) => ({
+      HeaderName: header.name,
+      HeaderValue: header.value,
+    }));
+    cfnDistribution.addPropertyOverride(
+      `DistributionConfig.Origins.${this.originCount}.OriginCustomHeaders`,
+      originCustomHeaders
+    );
+
     this.distribution.addBehavior(path, new S3Origin(bucket), {
-      cachePolicy: CachePolicy.CACHING_OPTIMIZED,
+      // cachePolicy: CachePolicy.CACHING_OPTIMIZED,
+      cachePolicy: CachePolicy.CACHING_DISABLED,
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+      edgeLambdas: [
+        {
+          functionVersion: this.usEast1Stack.versionArn(bucket),
+          eventType: LambdaEdgeEventType.ORIGIN_REQUEST,
+          includeBody: true,
+        },
+      ],
     });
   }
 
-  addLambda(handler: IFunction, furl: IFunctionUrl, path: string) {
+  addLambda(handler: IFunction, furl: IFunctionUrl, path: string, auth: Auth) {
     handler.addPermission("AllowCloudFrontServicePrincipal", {
       principal: new ServicePrincipal("cloudfront.amazonaws.com"),
       action: "lambda:InvokeFunctionUrl",
@@ -180,10 +205,27 @@ export class CloudFrontGateway extends Construct {
     });
 
     const cfnDistribution = this.distribution.node.defaultChild as CfnResource;
+
+    // Note: Lambda@Edge does not support environment variables, so we need to pass them via headers
+    const headers = [
+      { name: "X-User-Pool-Region", value: Stack.of(auth.userPool).region },
+      { name: "X-User-Pool-Id", value: auth.userPool.userPoolId },
+      { name: "X-User-Pool-App-Id", value: auth.client.userPoolClientId },
+    ];
+    const originCustomHeaders = headers.map((header) => ({
+      HeaderName: header.name,
+      HeaderValue: header.value,
+    }));
+
     cfnDistribution.addPropertyOverride(
       `DistributionConfig.Origins.${this.originCount}.OriginAccessControlId`,
       this.lambdaOac.attrId
     );
+    cfnDistribution.addPropertyOverride(
+      `DistributionConfig.Origins.${this.originCount}.OriginCustomHeaders`,
+      originCustomHeaders
+    );
+
     this.originCount++;
 
     this.distribution.addBehavior(path, origin, {
