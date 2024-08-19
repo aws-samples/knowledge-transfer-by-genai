@@ -11,8 +11,20 @@ import { CloudFrontGateway } from "./constructs/cloudfront-gateway";
 import { UsEast1Stack } from "./us-east-1-stack";
 import { FunctionUrlAuthType, InvokeMode } from "aws-cdk-lib/aws-lambda";
 
+export type BedrockModelId =
+  | "anthropic.claude-v2:1"
+  | "anthropic.claude-instant-v1"
+  | "anthropic.claude-3-sonnet-20240229-v1:0"
+  | "anthropic.claude-3-haiku-20240307-v1:0"
+  | "anthropic.claude-3-opus-20240229-v1:0"
+  | "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  | "mistral.mistral-7b-instruct-v0:2"
+  | "mistral.mixtral-8x7b-instruct-v0:1"
+  | "mistral.mistral-large-2402-v1:0";
+
 interface KnowledgeTransferStackProps extends cdk.StackProps {
   usEast1Stack: UsEast1Stack;
+  readonly bedrockRegion?: string;
 }
 
 export class KnowledgeTransferStack extends cdk.Stack {
@@ -22,6 +34,8 @@ export class KnowledgeTransferStack extends cdk.Stack {
     props: KnowledgeTransferStackProps
   ) {
     super(scope, id, props);
+
+    const bedrockRegion = props.bedrockRegion ?? "us-west-2";
 
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database");
@@ -38,6 +52,12 @@ export class KnowledgeTransferStack extends cdk.Stack {
     // Knowledge Base
     const knowledge = new Knowledge(this, "Knowledge", {
       knowledgeBucket: buckets.knowledgeBucket,
+      // TODO
+      // analyzer: {
+      //   characterFilters: ["icu_normalizer"],
+      //   tokenizer: "kuromoji_tokenizer",
+      //   tokenFilters: ["kuromoji_baseform", "ja_stop"],
+      // },
     });
 
     // Alert Apis
@@ -45,6 +65,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
       auth,
       database,
       knowledge,
+      bedrockRegion,
     });
 
     // Video summarizer
@@ -56,6 +77,10 @@ export class KnowledgeTransferStack extends cdk.Stack {
         knowledgeBucket: buckets.knowledgeBucket,
         transcriptionBucket: buckets.transcriptionBucket,
         database,
+        knowledge,
+        bedrockRegion,
+        // Model to summarize video
+        bedrockModelId: "anthropic.claude-3-opus-20240229-v1:0",
       }
     );
 

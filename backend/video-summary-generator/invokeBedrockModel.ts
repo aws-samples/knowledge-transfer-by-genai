@@ -9,7 +9,7 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 import { updateMeeting } from "@industrial-knowledge-transfer-by-genai/common";
 
-const { KNOWLEDGE_BUCKET_NAME, BEDROCK_REGION } = process.env;
+const { KNOWLEDGE_BUCKET_NAME, BEDROCK_REGION, BEDROCK_MODEL_ID } = process.env;
 
 const s3Client = new S3Client({});
 const bedrockClient = new BedrockRuntimeClient({ region: BEDROCK_REGION });
@@ -29,8 +29,6 @@ const SUMMARY_INSTRUCTIONS = `
 上記のガイドラインを遵守し、トランスクリプトをもとに議事録を作成してください。
 <transcript>TRANSCRIPT</transcript>
 `;
-
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID;
 
 export const invokeBedrockModel = async (event) => {
   let result: any = { status: "FAILED" };

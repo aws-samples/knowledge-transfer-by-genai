@@ -24,7 +24,8 @@ export interface AlertProps {
   auth: Auth;
   database: Database;
   knowledge: Knowledge;
-  readonly corsAllowOrigins?: string[];
+  corsAllowOrigins?: string[];
+  bedrockRegion: string;
 }
 
 export class Alert extends Construct {
@@ -53,7 +54,7 @@ export class Alert extends Construct {
         CHAT_TABLE_NAME: props.database.chatTable.tableName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         KNOWLEDGE_BASE_ID: props.knowledge.knowledgeBaseId,
-        BEDROCK_REGION: "us-west-2",
+        BEDROCK_REGION: props.bedrockRegion,
         BEDROCK_AGENT_REGION: Stack.of(props.knowledge).region,
       },
     });
@@ -66,6 +67,12 @@ export class Alert extends Construct {
           "bedrock:InvokeModelWithResponseStream",
         ],
         resources: ["*"],
+      })
+    );
+    handler.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["bedrock:Retrieve"],
+        resources: [props.knowledge.knowledgeBaseArn],
       })
     );
 

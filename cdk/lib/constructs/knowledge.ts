@@ -36,6 +36,8 @@ const DEFAULT_JA_ANALYZER: Analyzer = {
 
 export class Knowledge extends Construct {
   readonly knowledgeBaseId: string;
+  readonly knowledgeBaseArn: string;
+  readonly dataSourceId: string;
   constructor(scope: Construct, id: string, props: KnowledgeProps) {
     super(scope, id);
 
@@ -88,6 +90,8 @@ export class Knowledge extends Construct {
     });
 
     this.knowledgeBaseId = kb.knowledgeBaseId;
+    this.knowledgeBaseArn = kb.knowledgeBaseArn;
+    this.dataSourceId = dataSource.dataSourceId;
 
     new CfnOutput(this, "KnowledgeBaseId", {
       value: kb.knowledgeBaseId,

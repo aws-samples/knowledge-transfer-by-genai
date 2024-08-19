@@ -9,25 +9,17 @@ import { Construct } from "constructs";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
 import { Database } from "./database";
-
-type BedrockModelId =
-  | "anthropic.claude-v2:1"
-  | "anthropic.claude-instant-v1"
-  | "anthropic.claude-3-sonnet-20240229-v1:0"
-  | "anthropic.claude-3-haiku-20240307-v1:0"
-  | "anthropic.claude-3-opus-20240229-v1:0"
-  | "anthropic.claude-3-5-sonnet-20240620-v1:0"
-  | "mistral.mistral-7b-instruct-v0:2"
-  | "mistral.mixtral-8x7b-instruct-v0:1"
-  | "mistral.mistral-large-2402-v1:0";
+import { Knowledge } from "./knowledge";
+import { BedrockModelId } from "../knowledge-transfer-stack";
 
 export interface VideoSummaryGeneratorProps {
   readonly knowledgeBucket: s3.IBucket;
   readonly concatenatedBucket: s3.IBucket;
   readonly transcriptionBucket: s3.IBucket;
-  readonly bedrockModelId?: BedrockModelId;
-  readonly bedrockRegion?: string;
   readonly database: Database;
+  readonly knowledge: Knowledge;
+  readonly bedrockRegion: string;
+  readonly bedrockModelId: BedrockModelId;
 }
 
 export class VideoSummaryGenerator extends Construct {
@@ -38,10 +30,6 @@ export class VideoSummaryGenerator extends Construct {
    */
   constructor(scope: Construct, id: string, props: VideoSummaryGeneratorProps) {
     super(scope, id);
-
-    const bedrockModelId =
-      props.bedrockModelId ?? "anthropic.claude-3-opus-20240229-v1:0";
-    const bedrockRegion = props.bedrockRegion ?? "us-west-2";
 
     const summaryGenHandler = new NodejsFunction(this, "SummaryGenHandler", {
       entry: path.join(
@@ -58,9 +46,11 @@ export class VideoSummaryGenerator extends Construct {
         REGION: cdk.Stack.of(this).region,
         CONCATENATED_BUCKET_NAME: props.concatenatedBucket.bucketName,
         KNOWLEDGE_BUCKET_NAME: props.knowledgeBucket.bucketName,
-        BEDROCK_MODEL_ID: bedrockModelId,
-        BEDROCK_REGION: bedrockRegion,
+        BEDROCK_MODEL_ID: props.bedrockModelId,
         MEETING_TABLE_NAME: props.database.meetingTable.tableName,
+        KNOWLEDGE_BASE_ID: props.knowledge.knowledgeBaseId,
+        BEDROCK_REGION: props.bedrockRegion,
+        BEDROCK_AGENT_REGION: cdk.Stack.of(props.knowledge).region,
       },
     });
     summaryGenHandler.addToRolePolicy(
@@ -197,25 +187,111 @@ export class VideoSummaryGenerator extends Construct {
       }
     );
 
-    const invokeBedrockModel = new tasks.LambdaInvoke(
+    const startIngestionJob = new tasks.CallAwsService(
       this,
-      "Invoke Bedrock Model",
+      "StartIngestionJob",
       {
-        lambdaFunction: summaryGenHandler,
-        payload: sfn.TaskInput.fromObject({
-          jobType: "invokeBedrockModel",
-          "TranscriptionJob.$": "$.TranscriptionJob",
-          "Source.$": "$.Source",
-        }),
-        resultPath: "$.InvokeBedrockResult",
+        service: "bedrockagent",
+        action: "startIngestionJob",
+        iamAction: "bedrock:StartIngestionJob",
+        parameters: {
+          KnowledgeBaseId: props.knowledge.knowledgeBaseId,
+          DataSourceId: props.knowledge.dataSourceId,
+        },
+        iamResources: [
+          `arn:${cdk.Stack.of(this).partition}:bedrock:${
+            cdk.Stack.of(props.knowledge).region
+          }:${cdk.Stack.of(props.knowledge).account}:knowledge-base/*`,
+        ],
+        resultPath: "$.IngestionJob",
       }
     );
 
-    const bedrockModelStatus = new sfn.Choice(this, "Bedrock Model Status");
+    const getIngestionJob = new tasks.CallAwsService(this, "GetIngestionJob", {
+      service: "bedrockagent",
+      action: "getIngestionJob",
+      iamAction: "bedrock:GetIngestionJob",
+      parameters: {
+        KnowledgeBaseId: props.knowledge.knowledgeBaseId,
+        DataSourceId: props.knowledge.dataSourceId,
+        IngestionJobId: sfn.JsonPath.stringAt(
+          "$.IngestionJob.IngestionJob.IngestionJobId"
+        ),
+      },
+      iamResources: [
+        `arn:${cdk.Stack.of(this).partition}:bedrock:${
+          cdk.Stack.of(props.knowledge).region
+        }:${cdk.Stack.of(props.knowledge).account}:knowledge-base/*`,
+      ],
+      resultPath: "$.IngestionJob",
+    });
+
+    const waitForIngestionJob = new sfn.Wait(this, "WaitForIngestionJob", {
+      time: sfn.WaitTime.duration(cdk.Duration.seconds(30)),
+    });
+
+    const checkIngestionJobStatus = new sfn.Choice(
+      this,
+      "CheckIngestionJobStatus"
+    );
+
+    const invokeBedrockModel = new tasks.LambdaInvoke(this, "Summarize", {
+      lambdaFunction: summaryGenHandler,
+      payload: sfn.TaskInput.fromObject({
+        jobType: "invokeBedrockModel",
+        "TranscriptionJob.$": "$.TranscriptionJob",
+        "Source.$": "$.Source",
+      }),
+      resultPath: "$.InvokeBedrockResult",
+    });
+
+    // const bedrockModelStatus = new sfn.Choice(this, "Bedrock Model Status");
 
     const success = new sfn.Succeed(this, "Success");
     const processFailed = new sfn.Fail(this, "Process Failed");
 
+    // const stateMachine = new sfn.StateMachine(
+    //   this,
+    //   "SummaryGeneratorStateMachine",
+    //   {
+    //     definitionBody: sfn.DefinitionBody.fromChainable(
+    //       prepareInput
+    //         .next(startTranscriptionJob)
+    //         .next(waitForTranscriptionJob)
+    //         .next(getTranscriptionJobStatus)
+    //         .next(
+    //           new sfn.Choice(this, "TranscriptionJobStatusChoice")
+    //             .when(
+    //               sfn.Condition.stringEquals(
+    //                 "$.TranscriptionJob.TranscriptionJob.TranscriptionJobStatus",
+    //                 "COMPLETED"
+    //               ),
+    //               formatTranscription
+    //                 .next(invokeBedrockModel)
+    //                 .next(
+    //                   bedrockModelStatus
+    //                     .when(
+    //                       sfn.Condition.stringMatches(
+    //                         "$.InvokeBedrockResult.Payload.status",
+    //                         "SUCCEEDED"
+    //                       ),
+    //                       success
+    //                     )
+    //                     .otherwise(processFailed)
+    //                 )
+    //             )
+    //             .when(
+    //               sfn.Condition.stringEquals(
+    //                 "$.TranscriptionJob.TranscriptionJob.TranscriptionJobStatus",
+    //                 "FAILED"
+    //               ),
+    //               processFailed
+    //             )
+    //             .otherwise(waitForTranscriptionJob)
+    //         )
+    //     ),
+    //   }
+    // );
     const stateMachine = new sfn.StateMachine(
       this,
       "SummaryGeneratorStateMachine",
@@ -235,13 +311,34 @@ export class VideoSummaryGenerator extends Construct {
                   formatTranscription
                     .next(invokeBedrockModel)
                     .next(
-                      bedrockModelStatus
+                      new sfn.Choice(this, "SummarizationStatus")
                         .when(
                           sfn.Condition.stringMatches(
                             "$.InvokeBedrockResult.Payload.status",
                             "SUCCEEDED"
                           ),
-                          success
+                          startIngestionJob
+                            .next(getIngestionJob)
+                            .next(
+                              checkIngestionJobStatus
+                                .when(
+                                  sfn.Condition.stringEquals(
+                                    "$.IngestionJob.IngestionJob.Status",
+                                    "COMPLETE"
+                                  ),
+                                  success
+                                )
+                                .when(
+                                  sfn.Condition.stringEquals(
+                                    "$.IngestionJob.IngestionJob.Status",
+                                    "FAILED"
+                                  ),
+                                  processFailed
+                                )
+                                .otherwise(
+                                  waitForIngestionJob.next(getIngestionJob)
+                                )
+                            )
                         )
                         .otherwise(processFailed)
                     )
