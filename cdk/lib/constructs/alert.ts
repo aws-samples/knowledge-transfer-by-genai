@@ -19,13 +19,15 @@ import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import { Database } from "./database";
 import { CloudFrontGateway } from "./cloudfront-gateway";
 import { Knowledge } from "./knowledge";
+import { S3Buckets } from "./s3buckets";
 
 export interface AlertProps {
   auth: Auth;
   database: Database;
   knowledge: Knowledge;
-  corsAllowOrigins?: string[];
+  buckets: S3Buckets;
   bedrockRegion: string;
+  corsAllowOrigins?: string[];
 }
 
 export class Alert extends Construct {
@@ -34,7 +36,7 @@ export class Alert extends Construct {
   constructor(scope: Construct, id: string, props: AlertProps) {
     super(scope, id);
 
-    const { database, corsAllowOrigins: allowOrigins = ["*"] } = props;
+    const { database, buckets, corsAllowOrigins: allowOrigins = ["*"] } = props;
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -51,7 +53,9 @@ export class Alert extends Construct {
         REGION: Stack.of(this).region,
         ALERT_TABLE_NAME: database.alertTable.tableName,
         MEETING_TABLE_NAME: props.database.meetingTable.tableName,
-        CHAT_TABLE_NAME: props.database.chatTable.tableName,
+        // CHAT_TABLE_NAME: props.database.chatTable.tableName,
+        CONCATENATED_BUCKET_NAME: buckets.concatenatedBucket.bucketName,
+        KNOWLEDGE_BUCKET_NAME: buckets.knowledgeBucket.bucketName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         KNOWLEDGE_BASE_ID: props.knowledge.knowledgeBaseId,
         BEDROCK_REGION: props.bedrockRegion,
@@ -60,6 +64,8 @@ export class Alert extends Construct {
     });
     database.alertTable.grantReadWriteData(handler.role!);
     database.meetingTable.grantReadWriteData(handler.role!);
+    buckets.concatenatedBucket.grantRead(handler.role!);
+    buckets.knowledgeBucket.grantRead(handler.role!);
     handler.addToRolePolicy(
       new iam.PolicyStatement({
         actions: [

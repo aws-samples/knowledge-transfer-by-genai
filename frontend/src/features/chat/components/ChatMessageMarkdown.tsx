@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 // import ButtonCopy from "./ButtonCopy";
-import { UsedChunk } from "@/types/chat";
+import { UsedChunkWithLink } from "@/types/chat";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
 import { create } from "zustand";
@@ -18,7 +18,7 @@ import "katex/dist/katex.min.css";
 
 type Props = {
   children: string;
-  relatedDocuments?: UsedChunk[];
+  relatedDocuments?: UsedChunkWithLink[];
   messageIdx: number;
 };
 
@@ -39,7 +39,7 @@ const useMarkdownState = create<{
 }));
 
 const RelatedDocumentLink: React.FC<{
-  relatedDocument?: UsedChunk;
+  relatedDocument?: UsedChunkWithLink;
   linkId: string;
   children: ReactNode;
 }> = (props) => {
@@ -99,7 +99,7 @@ const RelatedDocumentLink: React.FC<{
               <span
                 className="ml-1 cursor-pointer underline"
                 onClick={() => {
-                  window.open(props.relatedDocument?.source, "_blank");
+                  window.open(props.relatedDocument?.link, "_blank");
                 }}
               >
                 {linkUrl}

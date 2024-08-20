@@ -65,6 +65,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
       auth,
       database,
       knowledge,
+      buckets,
       bedrockRegion,
     });
 
@@ -102,7 +103,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
       auth
     );
     // Associate video recording bucket with cloudfront
-    cfgw.addBucket(buckets.concatenatedBucket, "/video/*", auth);
+    // cfgw.addBucket(buckets.concatenatedBucket, "/video/*", auth);
 
     cfgw.buildViteApp({
       alertApiEndpoint: `${cfgw.getOrigin()}/api`,

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,50 +12,35 @@ import {
 } from "@/components/ui/tooltip";
 import { TbMovie } from "react-icons/tb";
 import ReactPlayer from "react-player";
+
 import { Meeting } from "@/types/meeting";
 import { cn } from "@/lib/utils";
-import { fetchAuthSession } from "aws-amplify/auth";
+import { useState } from "react";
+import useMeeting from "@/features/video-call/hooks/useMeeting";
 
 type Props = {
   meeting: Meeting;
+  alertId: string;
 };
 
-function MeetingVideoDialog(props: Props) {
+function MeetingVideoDialog({ meeting, alertId }: Props) {
   const [open, setOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const { meeting } = props;
+  const { getMeetingVideoUrl } = useMeeting(alertId);
 
   const isDisabled = !meeting.isConcatenated;
 
-  useEffect(() => {
-    const fetchVideo = async () => {
+  const handleOpen = async () => {
+    if (meeting.isConcatenated) {
       try {
-        const url = `${window.location.origin}/video/${meeting.id}/composited-video/${meeting.concatPipelineId}.mp4`;
-        const session = await fetchAuthSession();
-        const idToken = session.tokens?.idToken;
-
-        const response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        });
-
-        if (response.ok) {
-          const blob = await response.blob();
-          const objectUrl = URL.createObjectURL(blob);
-          setVideoUrl(objectUrl);
-        } else {
-          console.error("Failed to fetch video");
-        }
+        const url = await getMeetingVideoUrl(meeting.id);
+        setVideoUrl(url);
+        setOpen(true);
       } catch (error) {
-        console.error("Error fetching video:", error);
+        console.error("Failed to fetch video URL:", error);
       }
-    };
-
-    if (open) {
-      fetchVideo();
     }
-  }, [open, meeting.id, meeting.concatPipelineId]);
+  };
 
   return (
     <div>
@@ -64,7 +48,7 @@ function MeetingVideoDialog(props: Props) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <DialogTrigger asChild>
+              <DialogTrigger asChild onClick={handleOpen}>
                 <TbMovie
                   size="25"
                   className={cn(
@@ -89,8 +73,10 @@ function MeetingVideoDialog(props: Props) {
           )}
         >
           <DialogHeader className="h-8">Meeting Video</DialogHeader>
-          {videoUrl && (
+          {videoUrl ? (
             <ReactPlayer url={videoUrl} controls width="100%" height="100%" />
+          ) : (
+            <p>Loading video...</p>
           )}
         </DialogContent>
       </Dialog>

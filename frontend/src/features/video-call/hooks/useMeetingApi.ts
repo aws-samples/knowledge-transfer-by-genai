@@ -11,6 +11,11 @@ const useMeetingApi = () => {
     getMeeting: (meetingId: string) => {
       return http.get<Meeting>(`meeting/${meetingId}`);
     },
+    getMeetingVideoUrl: (alertId: string, meetingId: string) => {
+      return http.getOnce<string>(
+        `/alert/${alertId}/meetings/${meetingId}/video-url`
+      );
+    },
   };
 };
 

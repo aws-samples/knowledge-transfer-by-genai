@@ -4,7 +4,10 @@ import {
   Conversation,
   MessageContent,
 } from "@industrial-knowledge-transfer-by-genai/common";
-import { ChatRepository } from "@industrial-knowledge-transfer-by-genai/common";
+import {
+  ChatRepository,
+  findMeetingById,
+} from "@industrial-knowledge-transfer-by-genai/common";
 import {
   BedrockRuntimeClient,
   ConverseStreamCommand,
@@ -13,11 +16,19 @@ import {
   BedrockAgentRuntimeClient,
   RetrieveCommand,
 } from "@aws-sdk/client-bedrock-agent-runtime";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { Observable, Subject } from "rxjs";
 import { buildSystemPrompt } from "./prompt";
 
-const { KNOWLEDGE_BASE_ID, BEDROCK_REGION, BEDROCK_AGENT_REGION } = process.env;
+const {
+  KNOWLEDGE_BASE_ID,
+  BEDROCK_REGION,
+  BEDROCK_AGENT_REGION,
+  REGION,
+  KNOWLEDGE_BUCKET_NAME,
+} = process.env;
 
 const INFERENCE_CONFIG = {
   maxTokens: 512,
@@ -29,12 +40,14 @@ const INFERENCE_CONFIG = {
 export class ChatService {
   private bedrockClient: BedrockRuntimeClient;
   private bedrockAgentClient: BedrockAgentRuntimeClient;
+  private s3Client: S3Client;
 
   constructor(private readonly chatRepository: ChatRepository) {
     this.bedrockClient = new BedrockRuntimeClient({ region: BEDROCK_REGION });
     this.bedrockAgentClient = new BedrockAgentRuntimeClient({
       region: BEDROCK_AGENT_REGION,
     });
+    this.s3Client = new S3Client({ region: REGION });
   }
 
   handleMessage(
@@ -122,4 +135,36 @@ export class ChatService {
   getConversationByAlertId(alertId: string): Promise<Conversation> {
     return this.chatRepository.findConversationByAlertId(alertId);
   }
+
+  async issueReferenceDocumentUrl(
+    bucketName: string,
+    keyName: string
+  ): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: keyName,
+    });
+    const signedUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 3600,
+    });
+    return signedUrl;
+  }
+
+  // async issueReferenceDocumentUrl(s3Url: string): Promise<string> {
+  //   const s3Pattern = /^s3:\/\//;
+  //   const trimmedSource = s3Url.replace(s3Pattern, "");
+
+  //   const firstSlashIndex = trimmedSource.indexOf("/");
+  //   const bucketName = trimmedSource.substring(0, firstSlashIndex);
+  //   const keyName = trimmedSource.substring(firstSlashIndex + 1);
+
+  //   const command = new GetObjectCommand({
+  //     Bucket: bucketName,
+  //     Key: keyName,
+  //   });
+  //   const signedUrl = await getSignedUrl(this.s3Client, command, {
+  //     expiresIn: 3600,
+  //   });
+  //   return signedUrl;
+  // }
 }

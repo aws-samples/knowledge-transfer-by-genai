@@ -33,4 +33,17 @@ export class ChatController {
   async getConversation(@Param("alertId") alertId: string) {
     return this.chatService.getConversationByAlertId(alertId);
   }
+
+  @Get("/reference/:bucket/:mediaPipelineId/:fileName")
+  async getReferenceDocumentUrl(
+    @Param("bucket") bucket: string,
+    @Param("mediaPipelineId") mediaPipelineId: string,
+    @Param("fileName") fileName: string
+  ): Promise<string> {
+    console.log("bucket", bucket);
+    console.log("mediaPipelineId", mediaPipelineId);
+    console.log("fileName", fileName);
+    const key = `${mediaPipelineId}/${fileName}`;
+    return await this.chatService.issueReferenceDocumentUrl(bucket, key);
+  }
 }

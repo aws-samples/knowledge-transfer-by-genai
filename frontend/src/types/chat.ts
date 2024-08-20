@@ -22,6 +22,10 @@ export type UsedChunk = {
   rank: number;
 };
 
+export type UsedChunkWithLink = UsedChunk & {
+  link?: string;
+};
+
 export type MessageContent = {
   role: Role;
   content: Content[];

@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import ChatMessageMarkdown from "./ChatMessageMarkdown";
 import { PiUserFill } from "react-icons/pi";
-import { MessageContent, UsedChunk } from "@/types/chat";
+import { MessageContent, UsedChunk, UsedChunkWithLink } from "@/types/chat";
+import useChatApi from "@/features/chat/hooks/useChatApi";
 
 type Props = {
   messageIdx: number;
@@ -10,10 +11,38 @@ type Props = {
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
-  const relatedDocuments = useMemo<UsedChunk[] | undefined>(
-    () => props.relatedDocuments,
-    [props]
-  );
+  const chatApi = useChatApi();
+
+  const extractBucketAndKey = (url: string) => {
+    const s3Pattern = /^s3:\/\/([^\/]+)\/([^\/]+)\/(.+)$/;
+    const match = url.match(s3Pattern);
+    if (match && match.length === 4) {
+      return {
+        bucketName: match[1],
+        mediaPipelineId: match[2],
+        fileName: match[3],
+      };
+    }
+    return { bucketName: "", mediaPipelineId: "", fileName: "" };
+  };
+
+  const relatedDocumentsWithLinks: UsedChunkWithLink[] = [];
+
+  if (props.relatedDocuments) {
+    props.relatedDocuments.map((doc) => {
+      const { bucketName, mediaPipelineId, fileName } = extractBucketAndKey(
+        doc.source
+      );
+      const { data } = chatApi.getReferenceDocumentUrl(
+        bucketName,
+        mediaPipelineId,
+        fileName
+      );
+      if (data) {
+        relatedDocumentsWithLinks.push({ ...doc, link: data });
+      }
+    });
+  }
 
   const chatContent = useMemo<MessageContent | undefined>(() => {
     return props.chatContent;
@@ -47,7 +76,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           )}
           {chatContent?.role === "assistant" && (
             <ChatMessageMarkdown
-              relatedDocuments={relatedDocuments}
+              relatedDocuments={relatedDocumentsWithLinks}
               messageIdx={props.messageIdx}
             >
               {chatContent.content[0].body}

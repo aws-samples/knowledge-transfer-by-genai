@@ -4,7 +4,6 @@ import { AppService } from "./app.service";
 import { AlertModule } from "./alert/alert.module";
 import { ChatModule } from "./chat/chat.module";
 import { LoggerMiddleware } from "./middleware";
-
 @Module({
   imports: [AlertModule, ChatModule],
   controllers: [AppController],

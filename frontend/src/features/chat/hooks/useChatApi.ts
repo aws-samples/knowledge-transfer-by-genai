@@ -12,6 +12,15 @@ const useChatApi = () => {
         keepPreviousData: true,
       });
     },
+    getReferenceDocumentUrl: (
+      bucket: string,
+      mediaPipelineId: string,
+      fileName: string
+    ) => {
+      return http.get<string>(
+        `chat/reference/${bucket}/${mediaPipelineId}/${fileName}`
+      );
+    },
     mutateConversation: (
       alertId: string,
       conversation?:

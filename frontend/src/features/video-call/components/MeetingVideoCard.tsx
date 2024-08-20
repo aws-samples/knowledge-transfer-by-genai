@@ -16,7 +16,11 @@ function MeetingVideoCard(props: Props) {
         <label className="font-semibold">ビデオ通話の記録</label>
         <div className="mt-2 flex space-x-1">
           {meetings?.map((meeting) => (
-            <MeetingVideoDialog key={meeting.id} meeting={meeting} />
+            <MeetingVideoDialog
+              key={meeting.id}
+              meeting={meeting}
+              alertId={alertId}
+            />
           ))}
         </div>
       </Card>
