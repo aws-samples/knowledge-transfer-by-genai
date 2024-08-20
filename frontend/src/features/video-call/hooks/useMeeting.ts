@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Meeting, MeetingResponse } from "@/types/meeting";
 import useMeetingApi from "./useMeetingApi";
 
@@ -21,10 +22,18 @@ const useMeeting = (alertId: string) => {
     ? meetingsResponse.map(convertToMeeting)
     : undefined;
 
-  const getMeetingVideoUrl = async (meetingId: string): Promise<string> => {
-    const response = await api.getMeetingVideoUrl(alertId, meetingId);
-    return response.data;
-  };
+  const getMeetingVideoUrl = useCallback(
+    (meetingId: string) => {
+      // const response = await api.getMeetingVideoUrl(alertId, meetingId);
+      // return response.data;
+      const { data: meetingVideoUrl } = api.getMeetingVideoUrl(
+        alertId,
+        meetingId
+      );
+      return { meetingVideoUrl };
+    },
+    [api, alertId]
+  );
 
   return {
     meetings,

@@ -25,20 +25,15 @@ type Props = {
 
 function MeetingVideoDialog({ meeting, alertId }: Props) {
   const [open, setOpen] = useState(false);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const { getMeetingVideoUrl } = useMeeting(alertId);
 
   const isDisabled = !meeting.isConcatenated;
 
+  const { meetingVideoUrl } = getMeetingVideoUrl(meeting.id);
+
   const handleOpen = async () => {
-    if (meeting.isConcatenated) {
-      try {
-        const url = await getMeetingVideoUrl(meeting.id);
-        setVideoUrl(url);
-        setOpen(true);
-      } catch (error) {
-        console.error("Failed to fetch video URL:", error);
-      }
+    if (meeting.isConcatenated && !meetingVideoUrl) {
+      setOpen(true);
     }
   };
 
@@ -73,8 +68,13 @@ function MeetingVideoDialog({ meeting, alertId }: Props) {
           )}
         >
           <DialogHeader className="h-8">Meeting Video</DialogHeader>
-          {videoUrl ? (
-            <ReactPlayer url={videoUrl} controls width="100%" height="100%" />
+          {meetingVideoUrl ? (
+            <ReactPlayer
+              url={meetingVideoUrl}
+              controls
+              width="100%"
+              height="100%"
+            />
           ) : (
             <p>Loading video...</p>
           )}

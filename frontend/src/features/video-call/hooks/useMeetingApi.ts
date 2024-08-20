@@ -12,7 +12,7 @@ const useMeetingApi = () => {
       return http.get<Meeting>(`meeting/${meetingId}`);
     },
     getMeetingVideoUrl: (alertId: string, meetingId: string) => {
-      return http.getOnce<string>(
+      return http.get<string>(
         `/alert/${alertId}/meetings/${meetingId}/video-url`
       );
     },
