@@ -3,10 +3,7 @@ import {
   PostMessageRequest,
   Conversation,
   MessageContent,
-} from "@industrial-knowledge-transfer-by-genai/common";
-import {
   ChatRepository,
-  findMeetingById,
 } from "@industrial-knowledge-transfer-by-genai/common";
 import {
   BedrockRuntimeClient,
@@ -143,6 +140,7 @@ export class ChatService {
     const command = new GetObjectCommand({
       Bucket: bucketName,
       Key: keyName,
+      // Force to download the file, not open in the new browser tab
       ResponseContentDisposition: `attachment; filename="${keyName.split("/").pop()}"`,
     });
     const signedUrl = await getSignedUrl(this.s3Client, command, {

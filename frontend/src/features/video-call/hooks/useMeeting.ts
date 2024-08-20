@@ -5,7 +5,7 @@ import useMeetingApi from "./useMeetingApi";
 const useMeeting = (alertId: string) => {
   const api = useMeetingApi();
 
-  const convertToMeeting = (response: MeetingResponse): Meeting => {
+  const _convertToMeeting = (response: MeetingResponse): Meeting => {
     return {
       ...response,
       capturePipelineId: response.capturePipelineArn.split("/").pop() || "",
@@ -19,13 +19,11 @@ const useMeeting = (alertId: string) => {
     api.getAllMeetingsByAlertId(alertId);
 
   const meetings = meetingsResponse
-    ? meetingsResponse.map(convertToMeeting)
+    ? meetingsResponse.map(_convertToMeeting)
     : undefined;
 
   const getMeetingVideoUrl = useCallback(
     (meetingId: string) => {
-      // const response = await api.getMeetingVideoUrl(alertId, meetingId);
-      // return response.data;
       const { data: meetingVideoUrl } = api.getMeetingVideoUrl(
         alertId,
         meetingId
@@ -35,12 +33,22 @@ const useMeeting = (alertId: string) => {
     [api, alertId]
   );
 
+  const getMeeting = useCallback(
+    (meetingId: string) => {
+      const { data } = api.getMeeting(meetingId);
+      const meeting = data ? _convertToMeeting(data) : undefined;
+      return { meeting };
+    },
+    [api]
+  );
+
   return {
     meetings,
-    getMeeting: async (meetingId: string): Promise<Meeting> => {
-      const response = await api.getMeeting(meetingId);
-      return convertToMeeting(response.data!);
-    },
+    // getMeeting: async (meetingId: string): Promise<Meeting> => {
+    //   const response = await api.getMeeting(meetingId);
+    //   return _convertToMeeting(response.data!);
+    // },
+    getMeeting,
     getMeetingVideoUrl,
     refreshMeetings: () => {
       mutateMeetings();

@@ -21,9 +21,10 @@ import useMeeting from "@/features/video-call/hooks/useMeeting";
 type Props = {
   meeting: Meeting;
   alertId: string;
+  inverted?: boolean;
 };
 
-function MeetingVideoDialog({ meeting, alertId }: Props) {
+function MeetingVideoDialog({ meeting, alertId, inverted = false }: Props) {
   const [open, setOpen] = useState(false);
   const { getMeetingVideoUrl } = useMeeting(alertId);
 
@@ -46,11 +47,22 @@ function MeetingVideoDialog({ meeting, alertId }: Props) {
               <DialogTrigger asChild onClick={handleOpen}>
                 <TbMovie
                   size="25"
+                  // className={cn(
+                  //   "cursor-pointer",
+                  //   isDisabled
+                  //     ? "pointer-events-none text-muted-foreground"
+                  //     : "text-foreground"
+                  // )}
                   className={cn(
                     "cursor-pointer",
                     isDisabled
-                      ? "pointer-events-none text-gray-400"
-                      : "text-black"
+                      ? cn(
+                          "pointer-events-none",
+                          inverted ? "text-foreground" : "text-muted-foreground"
+                        )
+                      : inverted
+                        ? "text-background"
+                        : "text-foreground"
                   )}
                 />
               </DialogTrigger>

@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import ChatMessageMarkdown from "./ChatMessageMarkdown";
 import { PiUserFill } from "react-icons/pi";
 import { MessageContent, UsedChunk, UsedChunkWithLink } from "@/types/chat";
-import useChatApi from "@/features/chat/hooks/useChatApi";
 import useRelatedDocument from "../hooks/useRelatedDocument";
 
 type Props = {
@@ -13,48 +12,15 @@ type Props = {
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
-  // const chatApi = useChatApi();
-
-  // const extractBucketAndKey = (url: string) => {
-  //   const s3Pattern = /^s3:\/\/([^\/]+)\/([^\/]+)\/(.+)$/;
-  //   const match = url.match(s3Pattern);
-  //   if (match && match.length === 4) {
-  //     return {
-  //       bucketName: match[1],
-  //       mediaPipelineId: match[2],
-  //       fileName: match[3],
-  //     };
-  //   }
-  //   return { bucketName: "", mediaPipelineId: "", fileName: "" };
-  // };
-
-  // const relatedDocumentsWithLinks: UsedChunkWithLink[] = [];
-
-  // if (props.relatedDocuments) {
-  //   props.relatedDocuments.map((doc) => {
-  //     const { bucketName, mediaPipelineId, fileName } = extractBucketAndKey(
-  //       doc.source
-  //     );
-  //     const { data } = chatApi.getReferenceDocumentUrl(
-  //       bucketName,
-  //       mediaPipelineId,
-  //       fileName
-  //     );
-  //     if (data) {
-  //       relatedDocumentsWithLinks.push({
-  //         ...doc,
-  //         link: data,
-  //         // meetingId: mediaPipelineId,
-  //       });
-  //     }
-  //   });
-  // }
-
   const { getRelatedDocumentsWithLinks } = useRelatedDocument();
 
-  const relatedDocumentsWithLinks = useMemo(
-    () => getRelatedDocumentsWithLinks(props.relatedDocuments),
-    [getRelatedDocumentsWithLinks, props.relatedDocuments]
+  // const relatedDocumentsWithLinks = useMemo(
+  //   () => getRelatedDocumentsWithLinks(props.relatedDocuments),
+  //   [getRelatedDocumentsWithLinks, props.relatedDocuments]
+  // );
+
+  const relatedDocumentsWithLinks = getRelatedDocumentsWithLinks(
+    props.relatedDocuments
   );
 
   const chatContent = useMemo<MessageContent | undefined>(() => {

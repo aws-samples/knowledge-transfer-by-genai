@@ -5,7 +5,7 @@ import { UsedChunkWithLink, UsedChunk } from "@/types/chat";
 const useRelatedDocument = () => {
   const chatApi = useChatApi();
 
-  const _extractBucketAndKey = (url: string) => {
+  const extractBucketAndKey = useCallback((url: string) => {
     const s3Pattern = /^s3:\/\/([^\/]+)\/([^\/]+)\/(.+)$/;
     const match = url.match(s3Pattern);
     if (match && match.length === 4) {
@@ -16,7 +16,7 @@ const useRelatedDocument = () => {
       };
     }
     return { bucketName: "", mediaPipelineId: "", fileName: "" };
-  };
+  }, []);
 
   const getRelatedDocumentsWithLinks = useCallback(
     (relatedDocuments?: UsedChunk[]) => {
@@ -24,8 +24,9 @@ const useRelatedDocument = () => {
 
       if (relatedDocuments) {
         relatedDocuments.forEach((doc) => {
-          const { bucketName, mediaPipelineId, fileName } =
-            _extractBucketAndKey(doc.source);
+          const { bucketName, mediaPipelineId, fileName } = extractBucketAndKey(
+            doc.source
+          );
           const { data } = chatApi.getReferenceDocumentUrl(
             bucketName,
             mediaPipelineId,
@@ -42,10 +43,11 @@ const useRelatedDocument = () => {
 
       return relatedDocumentsWithLinks;
     },
-    [chatApi]
+    [chatApi, extractBucketAndKey]
   );
 
   return {
+    extractBucketAndKey,
     getRelatedDocumentsWithLinks,
   };
 };

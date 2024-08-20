@@ -1,4 +1,4 @@
-import { Meeting } from "@/types/meeting";
+import { MeetingResponse } from "@/types/meeting";
 import useHttp from "@/hooks/useHttp";
 
 const useMeetingApi = () => {
@@ -6,10 +6,10 @@ const useMeetingApi = () => {
 
   return {
     getAllMeetingsByAlertId: (alertId: string) => {
-      return http.get<Meeting[]>(`/alert/${alertId}/meetings`);
+      return http.get<MeetingResponse[]>(`/alert/${alertId}/meetings`);
     },
     getMeeting: (meetingId: string) => {
-      return http.get<Meeting>(`meeting/${meetingId}`);
+      return http.get<MeetingResponse>(`meeting/${meetingId}`);
     },
     getMeetingVideoUrl: (alertId: string, meetingId: string) => {
       return http.get<string>(

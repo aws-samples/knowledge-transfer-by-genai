@@ -11,6 +11,9 @@ import rehypeExternalLinks, { Options } from "rehype-external-links";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
+import useMeeting from "@/features/video-call/hooks/useMeeting";
+import useRelatedDocument from "@/features/chat/hooks/useRelatedDocument";
+import MeetingVideoDialog from "@/features/video-call/components/MeetingVideoDialog";
 
 type Props = {
   alertId: string;
@@ -39,9 +42,22 @@ const RelatedDocumentLink: React.FC<{
   relatedDocument?: UsedChunkWithLink;
   linkId: string;
   children: ReactNode;
+  alertId: string;
 }> = (props) => {
   const { t } = useTranslation();
   const { isOpenReference, setIsOpenReference } = useMarkdownState();
+  const { getMeeting } = useMeeting(props.alertId);
+  const { extractBucketAndKey } = useRelatedDocument();
+
+  const url = props.relatedDocument?.source;
+
+  let meeting;
+  if (url) {
+    const { meeting: data } = getMeeting(
+      extractBucketAndKey(url).mediaPipelineId
+    );
+    meeting = data;
+  }
 
   const linkUrl = useMemo(() => {
     const url = props.relatedDocument?.source;
@@ -57,7 +73,7 @@ const RelatedDocumentLink: React.FC<{
 
   return (
     <>
-      <a
+      <span
         className={twMerge(
           "mx-0.5 ",
           props.relatedDocument
@@ -69,10 +85,10 @@ const RelatedDocumentLink: React.FC<{
         }}
       >
         {props.children}
-      </a>
+      </span>
 
       {props.relatedDocument && (
-        <div
+        <span
           className={twMerge(
             isOpenReference[props.linkId] ? "visible" : "invisible",
             "fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-primary/20 transition duration-1000"
@@ -81,7 +97,7 @@ const RelatedDocumentLink: React.FC<{
             setIsOpenReference(props.linkId, false);
           }}
         >
-          <div
+          <span
             className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-primary p-1 text-sm text-primary-foreground"
             onClick={(e) => {
               e.stopPropagation();
@@ -101,15 +117,26 @@ const RelatedDocumentLink: React.FC<{
               >
                 {linkUrl}
               </span>
+              <div className="my-1">
+                {t("alertDetail.chat.referenceVideo")}:
+              </div>
+              {meeting && (
+                <MeetingVideoDialog
+                  meeting={meeting}
+                  alertId={props.alertId}
+                  inverted
+                />
+              )}
             </div>
-          </div>
-        </div>
+          </span>
+        </span>
       )}
     </>
   );
 };
 
 const ChatMessageMarkdown: React.FC<Props> = ({
+  alertId,
   children,
   relatedDocuments,
   messageIdx,
@@ -150,24 +177,6 @@ const ChatMessageMarkdown: React.FC<Props> = ({
             <code {...props} className={className}>
               {children}
             </code>
-            // const match = /language-(\w+)/.exec(className || "");
-            // const codeText = onlyText(children).replace(/\n$/, "");
-
-            // return !inline && match ? (
-            //   <CopyToClipboard codeText={codeText}>
-            //     <SyntaxHighlighter
-            //       // {...props}
-            //       children={codeText}
-            //       style={vscDarkPlus}
-            //       language={match[1]}
-            //       PreTag="div"
-            //       wrapLongLines={true}
-            //     />
-            //   </CopyToClipboard>
-            // ) : (
-            //   <code {...props} className={className}>
-            //     {children}
-            //   </code>
           );
         },
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -192,6 +201,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                     return (
                       <RelatedDocumentLink
                         key={`${messageIdx}-${idx}-${docNo}`}
+                        alertId={alertId}
                         linkId={`${messageIdx}-${idx}-${docNo}`}
                         relatedDocument={doc}
                       >
@@ -221,20 +231,5 @@ const ChatMessageMarkdown: React.FC<Props> = ({
     />
   );
 };
-
-// const CopyToClipboard = ({
-//   children,
-//   codeText,
-// }: {
-//   children: React.ReactNode;
-//   codeText: string;
-// }) => {
-//   return (
-//     <div className="relative">
-//       {children}
-//       <ButtonCopy text={codeText} className="absolute right-2 top-2" />
-//     </div>
-//   );
-// };
 
 export default ChatMessageMarkdown;
