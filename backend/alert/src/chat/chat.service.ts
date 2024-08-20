@@ -143,28 +143,11 @@ export class ChatService {
     const command = new GetObjectCommand({
       Bucket: bucketName,
       Key: keyName,
+      ResponseContentDisposition: `attachment; filename="${keyName.split("/").pop()}"`,
     });
     const signedUrl = await getSignedUrl(this.s3Client, command, {
       expiresIn: 3600,
     });
     return signedUrl;
   }
-
-  // async issueReferenceDocumentUrl(s3Url: string): Promise<string> {
-  //   const s3Pattern = /^s3:\/\//;
-  //   const trimmedSource = s3Url.replace(s3Pattern, "");
-
-  //   const firstSlashIndex = trimmedSource.indexOf("/");
-  //   const bucketName = trimmedSource.substring(0, firstSlashIndex);
-  //   const keyName = trimmedSource.substring(firstSlashIndex + 1);
-
-  //   const command = new GetObjectCommand({
-  //     Bucket: bucketName,
-  //     Key: keyName,
-  //   });
-  //   const signedUrl = await getSignedUrl(this.s3Client, command, {
-  //     expiresIn: 3600,
-  //   });
-  //   return signedUrl;
-  // }
 }

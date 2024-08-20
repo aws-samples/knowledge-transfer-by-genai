@@ -5,6 +5,8 @@ import type {
 } from "aws-lambda";
 import { createHash } from "crypto";
 import { CognitoJwtVerifier } from "aws-jwt-verify";
+import { SimpleJwksCache } from "aws-jwt-verify/jwk";
+import { SimpleJsonFetcher } from "aws-jwt-verify/https";
 
 const extractToken = (request: CloudFrontRequest): string => {
   const headers = request.headers;
@@ -29,12 +31,25 @@ const verifyToken = async (
 ): Promise<void> => {
   const issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
 
-  const verifier = CognitoJwtVerifier.create({
-    userPoolId,
-    tokenUse: "id",
-    clientId,
-    issuer,
-  });
+  const verifier = CognitoJwtVerifier.create(
+    {
+      userPoolId,
+      tokenUse: "id",
+      clientId,
+      issuer,
+    },
+    // Default timeout is 1500ms but sometimes it's not enough
+    // See: https://github.com/awslabs/aws-jwt-verify/issues/72#issuecomment-1139609992
+    {
+      jwksCache: new SimpleJwksCache({
+        fetcher: new SimpleJsonFetcher({
+          defaultRequestOptions: {
+            responseTimeout: 3000,
+          },
+        }),
+      }),
+    }
+  );
 
   try {
     const payload = await verifier.verify(token);
