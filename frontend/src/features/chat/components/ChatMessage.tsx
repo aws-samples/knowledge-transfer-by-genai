@@ -5,6 +5,7 @@ import { MessageContent, UsedChunk, UsedChunkWithLink } from "@/types/chat";
 import useChatApi from "@/features/chat/hooks/useChatApi";
 
 type Props = {
+  alertId: string;
   messageIdx: number;
   chatContent?: MessageContent;
   relatedDocuments?: UsedChunk[];
@@ -39,7 +40,11 @@ const ChatMessage: React.FC<Props> = (props) => {
         fileName
       );
       if (data) {
-        relatedDocumentsWithLinks.push({ ...doc, link: data });
+        relatedDocumentsWithLinks.push({
+          ...doc,
+          link: data,
+          meetingId: mediaPipelineId,
+        });
       }
     });
   }
@@ -76,6 +81,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           )}
           {chatContent?.role === "assistant" && (
             <ChatMessageMarkdown
+              alertId={props.alertId}
               relatedDocuments={relatedDocumentsWithLinks}
               messageIdx={props.messageIdx}
             >

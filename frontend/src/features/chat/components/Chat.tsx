@@ -83,6 +83,7 @@ const Chat: React.FC<{ alertId: string }> = (props) => {
                       }`}
                     >
                       <ChatMessage
+                        alertId={alertId}
                         messageIdx={idx}
                         chatContent={message}
                         relatedDocuments={message.usedChunks}

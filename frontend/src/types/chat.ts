@@ -24,6 +24,7 @@ export type UsedChunk = {
 
 export type UsedChunkWithLink = UsedChunk & {
   link?: string;
+  videoLink?: string;
 };
 
 export type MessageContent = {

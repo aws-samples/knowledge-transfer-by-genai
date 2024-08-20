@@ -44,7 +44,7 @@ const verifyToken = async (
       jwksCache: new SimpleJwksCache({
         fetcher: new SimpleJsonFetcher({
           defaultRequestOptions: {
-            responseTimeout: 3000,
+            responseTimeout: 5000,
           },
         }),
       }),

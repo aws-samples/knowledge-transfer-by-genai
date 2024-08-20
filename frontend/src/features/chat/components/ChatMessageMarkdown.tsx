@@ -1,10 +1,7 @@
 import React, { ReactNode, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-// import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-// import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-// import ButtonCopy from "./ButtonCopy";
 import { UsedChunkWithLink } from "@/types/chat";
 import { twMerge } from "tailwind-merge";
 import { useTranslation } from "react-i18next";
@@ -14,9 +11,9 @@ import rehypeExternalLinks, { Options } from "rehype-external-links";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import "katex/dist/katex.min.css";
-// import { onlyText } from "react-children-utilities";
 
 type Props = {
+  alertId: string;
   children: string;
   relatedDocuments?: UsedChunkWithLink[];
   messageIdx: number;
