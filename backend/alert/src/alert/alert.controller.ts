@@ -70,9 +70,9 @@ export class AlertController {
 
   @Get("/:alertId/meetings/:meetingId/video-url")
   async getMeetingVideoUrl(
-    @Param("alertId") alertId: string
-    // @Param("meetingId") meetingId: string
+    // @Param("alertId") alertId: string
+    @Param("meetingId") meetingId: string
   ): Promise<string> {
-    return await this.alertService.issueMeetingVideoUrl(alertId);
+    return await this.alertService.issueMeetingVideoUrl(meetingId);
   }
 }
