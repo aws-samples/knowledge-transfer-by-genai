@@ -25,17 +25,18 @@ function ChimeCalleeDialog(props: Props) {
     isOpenRing,
     openRing,
     closeRing,
+    close,
     setAttendees,
     meetingInfo,
     setMeetingInfo,
     sendMessage,
     subscribeMessage,
     getEmail,
+    join,
   } = useChime();
 
   // setAttendees でグローバルステートに保存すると ChimeDialog で join が実行され会議参加が開始するため、attendee の一時的なストア先として利用
   const [caller, setCaller] = useState<Attendee | null>(null);
-
   const { myName } = props;
 
   // 他の参加者からの会議開始・終了通知を受け取る
@@ -55,9 +56,11 @@ function ChimeCalleeDialog(props: Props) {
         openRing();
       } else if (state === "MEETING_END") {
         closeRing();
+        // Chimeハンドラの登録はグローバル管理のため、呼び出し側のダイアログクローズ処理もここに記述
+        close();
       }
     },
-    [getEmail, openRing, closeRing, setMeetingInfo]
+    [getEmail, openRing, closeRing, setMeetingInfo, close]
   );
 
   // 会議の開始・終了通知を受け取る
@@ -72,6 +75,7 @@ function ChimeCalleeDialog(props: Props) {
 
   const onClickCallOn = () => {
     setAttendees([caller!]);
+    join();
     openChime();
     closeRing();
   };

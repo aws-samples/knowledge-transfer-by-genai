@@ -6,6 +6,7 @@ import {
   GlobalStyles,
 } from "amazon-chime-sdk-component-library-react";
 import ChimeCalleeDialog from "@/features/video-call/components/ChimeCalleeDialog";
+import ChimeDialog from "@/features/video-call/components/ChimeDialog";
 
 type Props = {
   myName: string;
@@ -20,6 +21,7 @@ function ChimeDialogProvider(props: Props) {
       <GlobalStyles />
       <BackgroundBlurProvider>
         <MeetingProvider>
+          <ChimeDialog myName={props?.myName ?? ""} />
           <ChimeCalleeDialog myName={props?.myName ?? ""} />
           {children}
         </MeetingProvider>

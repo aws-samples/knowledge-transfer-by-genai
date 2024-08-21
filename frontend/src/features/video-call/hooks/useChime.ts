@@ -9,6 +9,9 @@ import {
   sendMeetingMessage,
 } from "@/features/video-call/graphql/mutations";
 import { onMeetingMessageReceived } from "@/features/video-call/graphql/subscriptions";
+import { useCallback } from "react";
+import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
+import { MeetingSessionConfiguration } from "amazon-chime-sdk-js";
 
 export type Attendee = { id: string; name: string };
 
@@ -90,26 +93,28 @@ const useChime = () => {
     closeRing,
   } = useChimeState();
 
+  const meetingManager = useMeetingManager();
   const client = generateClient();
 
-  // 会議参加通知や会議終了通知を送信する
-  const sendMessage = async ({
-    myName,
-    targetId,
-    state,
-    meetingInfo,
-  }: SendMessageParams) => {
-    await client.graphql({
-      query: sendMeetingMessage,
-      variables: {
-        source: myName,
-        target: targetId,
-        state,
-        meetingInfo,
-      },
-      authMode: "userPool",
-    });
-  };
+  const sendMessage = useCallback(
+    async ({ myName, targetId, state, meetingInfo }: SendMessageParams) => {
+      try {
+        await client.graphql({
+          query: sendMeetingMessage,
+          variables: {
+            source: myName,
+            target: targetId,
+            state,
+            meetingInfo,
+          },
+          authMode: "userPool",
+        });
+      } catch (error) {
+        console.error("Error in sendMessage:", error);
+      }
+    },
+    [client]
+  );
 
   // 会議参加通知や会議終了通知を受け取る
   // 受け取ったサブスクライバーは unsubscribe でリリースする
@@ -133,22 +138,25 @@ const useChime = () => {
   };
 
   // 会議の作成・参加を開始する
-  const createAndJoin = async (alertId: string): Promise<MeetingResponse> => {
-    const meetingCreated = await client.graphql({
-      query: createChimeMeeting,
-      variables: {
-        alertId,
-      },
-      authMode: "userPool",
-    });
-    const meeting = JSON.parse(
-      meetingCreated.data.createChimeMeeting.meetingResponse
-    );
-    const attendee = JSON.parse(
-      meetingCreated.data.createChimeMeeting.attendeeResponse
-    );
-    return { meeting, attendee };
-  };
+  const createAndJoin = useCallback(
+    async (alertId: string): Promise<MeetingResponse> => {
+      const meetingCreated = await client.graphql({
+        query: createChimeMeeting,
+        variables: {
+          alertId,
+        },
+        authMode: "userPool",
+      });
+      const meeting = JSON.parse(
+        meetingCreated.data.createChimeMeeting.meetingResponse
+      );
+      const attendee = JSON.parse(
+        meetingCreated.data.createChimeMeeting.attendeeResponse
+      );
+      return { meeting, attendee };
+    },
+    [client]
+  );
 
   // 招集された会議への参加を開始する
   const join = async (): Promise<MeetingResponse> => {
@@ -161,6 +169,14 @@ const useChime = () => {
     });
     const meeting = meetingInfo;
     const attendee = JSON.parse(joined.data.joinMeeting.attendeeResponse);
+
+    const meetingSessionConfiguration = new MeetingSessionConfiguration(
+      meeting,
+      attendee
+    );
+    await meetingManager.join(meetingSessionConfiguration);
+    await meetingManager.start();
+
     return { meeting, attendee };
   };
 
@@ -193,6 +209,34 @@ const useChime = () => {
     return email;
   };
 
+  // 会議の作成と参加
+  const initiateMeeting = useCallback(
+    async (alertId: string, initiatorPersonName: string): Promise<void> => {
+      const attendees = useChimeState.getState().attendees;
+      if (attendees.length == 0) {
+        return;
+      }
+      // 会議の作成・参加を開始する
+      const { meeting, attendee } = await createAndJoin(alertId);
+      const meetingSessionConfiguration = new MeetingSessionConfiguration(
+        meeting,
+        attendee
+      );
+      await meetingManager.join(meetingSessionConfiguration);
+      await meetingManager.start();
+      setMeetingInfo(meeting);
+
+      // 他の参加者に会議を通知する
+      await sendMessage({
+        myName: initiatorPersonName,
+        targetId: attendees[0].id,
+        state: "MEETING_START",
+        meetingInfo: JSON.stringify(meeting),
+      });
+    },
+    [createAndJoin, meetingManager, sendMessage, setMeetingInfo]
+  );
+
   return {
     open,
     close,
@@ -210,6 +254,7 @@ const useChime = () => {
     sendMessage,
     subscribeMessage,
     getEmail,
+    initiateMeeting,
   };
 };
 export default useChime;

@@ -16,36 +16,21 @@ import {
   LuPhoneOff,
 } from "react-icons/lu";
 import { TbBlur, TbBlurOff } from "react-icons/tb";
-import { MeetingSessionConfiguration } from "amazon-chime-sdk-js";
 import {
   useMeetingManager,
   useLocalVideo,
   useToggleLocalMute,
   VideoTileGrid,
 } from "amazon-chime-sdk-component-library-react";
-import { OnMeetingMessageReceivedSubscription } from "@/features/video-call/graphql-api";
 import { useBackgroundBlurToggle } from "@/features/video-call/hooks/useBackgroundBlurToggle";
 
 type Props = {
   myName: string;
-  alertId: string;
 };
 
 function ChimeDialog(props: Props) {
-  // Note: Dialog modal state is managed globally by useChime hook
-  const {
-    open,
-    isOpen,
-    close,
-    attendees,
-    meetingInfo,
-    setMeetingInfo,
-    createAndJoin,
-    join,
-    disconnect,
-    sendMessage,
-    subscribeMessage,
-  } = useChime();
+  const { isOpen, close, attendees, meetingInfo, disconnect, sendMessage } =
+    useChime();
 
   const [minimize, setMinimize] = useState(false);
 
@@ -54,76 +39,7 @@ function ChimeDialog(props: Props) {
   const { toggleVideo, isVideoEnabled } = useLocalVideo();
   const { toggleMute, muted } = useToggleLocalMute();
 
-  const { myName, alertId } = props;
-
-  // 他の参加者からの会議終了通知を受け取る
-  const receiveMessage = useCallback(
-    (response: OnMeetingMessageReceivedSubscription) => {
-      if (response.onMeetingMessageReceived?.state === "MEETING_END") {
-        close();
-      }
-    },
-    [close]
-  );
-
-  // 会議の作成と参加、または招集された会議への参加を開始する
-  const initiateMeeting = useCallback(async (): Promise<void> => {
-    if (!meetingInfo) {
-      // 会議の作成・参加を開始する
-      const { meeting, attendee } = await createAndJoin(alertId);
-      const meetingSessionConfiguration = new MeetingSessionConfiguration(
-        meeting,
-        attendee
-      );
-      await meetingManager.join(meetingSessionConfiguration);
-      await meetingManager.start();
-      setMeetingInfo(meeting);
-
-      // 他の参加者に会議を通知する
-      sendMessage({
-        myName,
-        targetId: attendees[0].id,
-        state: "MEETING_START",
-        meetingInfo: JSON.stringify(meeting),
-      });
-    } else {
-      // 招集された会議への参加を開始する
-      const { meeting, attendee } = await join();
-      const meetingSessionConfiguration = new MeetingSessionConfiguration(
-        meeting,
-        attendee
-      );
-      await meetingManager.join(meetingSessionConfiguration);
-      await meetingManager.start();
-    }
-  }, [
-    attendees,
-    meetingInfo,
-    createAndJoin,
-    join,
-    meetingManager,
-    sendMessage,
-    myName,
-    alertId,
-    setMeetingInfo,
-  ]);
-
-  // Receive meeting end notification
-  useEffect(() => {
-    if (myName) {
-      const subscriber = subscribeMessage(myName, receiveMessage);
-      return () => {
-        subscriber.unsubscribe();
-      };
-    }
-  }, [myName, subscribeMessage, receiveMessage]);
-
-  // When attendees are registered, start or join the meeting
-  useEffect(() => {
-    if (attendees.length > 0) {
-      initiateMeeting();
-    }
-  }, [attendees, initiateMeeting]);
+  const { myName } = props;
 
   useEffect(() => {
     if (!isOpen) {
@@ -134,15 +50,6 @@ function ChimeDialog(props: Props) {
   // Make sure the dialog does not close when you click outside the dialog
   const onInteractOutside = (e: Event) => {
     e.preventDefault();
-  };
-
-  // This method is deprecated because the Close button has been removed from dialog-expandable
-  const onOpenChange = (isopen: boolean) => {
-    if (isopen) {
-      open();
-    } else {
-      close();
-    }
   };
 
   const onClickEndCall = async () => {
@@ -160,7 +67,7 @@ function ChimeDialog(props: Props) {
   const gridClass = minimize ? "" : "grid-rows-[32px,1fr,48px] min-h-[416px]";
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={isOpen} modal={false}>
       <DialogContent
         collapsecallback={setMinimize}
         className={cn(

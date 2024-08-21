@@ -3,7 +3,6 @@ import CloseAlertDialog from "@/features/alert/components/CloseAlertDialog";
 import Chat from "@/features/chat/components/Chat";
 import AlertDetailCard from "@/features/alert/components/AlertDetailCard";
 import ContactCard from "@/features/video-call/components/ContactCard";
-import ChimeDialog from "@/features/video-call/components/ChimeDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useAlert from "@/features/alert/hooks/useAlert";
 import { AuthUser } from "aws-amplify/auth";
@@ -55,7 +54,10 @@ function AlertDetailPage(props: ComponentProps) {
               {alert && (
                 <>
                   <AlertDetailCard item={alert} />
-                  <ContactCard />
+                  <ContactCard
+                    myName={user?.username ?? ""}
+                    alertId={alertId}
+                  />
                   <MeetingVideoCard alertId={alert.id}></MeetingVideoCard>
                 </>
               )}
@@ -66,7 +68,6 @@ function AlertDetailPage(props: ComponentProps) {
           {alert && <Chat alertId={alert.id} />}
         </div>
       </div>
-      <ChimeDialog myName={user?.username!} alertId={alert?.id ?? ""} />
     </>
   );
 }

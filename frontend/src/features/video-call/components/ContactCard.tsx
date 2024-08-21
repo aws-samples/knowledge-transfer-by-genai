@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -19,27 +19,31 @@ type User = {
   name: string;
 };
 
-function ContactCard() {
-  const { open: openChime, isOpen: isOpenChime, setAttendees } = useChime();
+type Props = {
+  myName: string;
+  alertId: string;
+};
+
+function ContactCard(props: Props) {
+  const {
+    open: openChime,
+    isOpen: isOpenChime,
+    setAttendees,
+    initiateMeeting,
+  } = useChime();
   const [openMenu, setOpenMenu] = useState(false);
   const [callees, setCallees] = useState<User[]>([]);
   const [assignees, setAssignees] = useState<User[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
   const { t } = useTranslation();
 
-  const onClickCall = () => {
+  const onClickCall = async () => {
     setAttendees(callees);
     openChime();
+    await initiateMeeting(props.alertId, props.myName);
   };
 
-  useEffect(() => {
-    currentAuthenticatedUser();
-    if (currentUserId.length !== 0) {
-      getAlertAsignee();
-    }
-  }, [currentUserId]);
-
-  const getAlertAsignee = async () => {
+  const getAlertAsignee = useCallback(async () => {
     const client = generateClient();
 
     const userInfos = await client.graphql({
@@ -58,7 +62,14 @@ function ContactCard() {
     } else {
       console.error("userId is undefined or not a string");
     }
-  };
+  }, [currentUserId]);
+
+  useEffect(() => {
+    currentAuthenticatedUser();
+    if (currentUserId.length !== 0) {
+      getAlertAsignee();
+    }
+  }, [currentUserId, getAlertAsignee]);
 
   const currentAuthenticatedUser = async () => {
     try {
