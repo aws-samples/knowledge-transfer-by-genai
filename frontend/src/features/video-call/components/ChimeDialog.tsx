@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import useChime from "@/features/video-call/hooks/useChime";
 import { Button } from "@/components/ui/button";
