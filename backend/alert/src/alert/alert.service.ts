@@ -17,13 +17,19 @@ import {
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+const {
+  REGION,
+  CONCATENATED_BUCKET_NAME,
+  TRANSCRIPTION_BUCKET_NAME,
+  KNOWLEDGE_BUCKET_NAME,
+} = process.env;
+
 @Injectable()
 export class AlertService {
   private s3Client: S3Client;
 
   constructor() {
-    const region = process.env.REGION || "ap-northeast-1";
-    this.s3Client = new S3Client({ region: region });
+    this.s3Client = new S3Client({ region: REGION });
   }
 
   async getAlerts(): Promise<Alert[]> {
@@ -79,7 +85,7 @@ export class AlertService {
   }
 
   async issueMeetingVideoUrl(meetingId: string): Promise<string> {
-    const bucketName = process.env.CONCATENATED_BUCKET_NAME;
+    const bucketName = CONCATENATED_BUCKET_NAME;
     const meeting = await findMeetingById(meetingId);
 
     if (!meeting.concatPipelineArn) {
@@ -94,6 +100,60 @@ export class AlertService {
     const command = new GetObjectCommand({
       Bucket: bucketName,
       Key: objectKey,
+    });
+
+    const signedUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 3600,
+    });
+
+    return signedUrl;
+  }
+
+  async issueMeetingTranscriptUrl(meetingId: string): Promise<string> {
+    const bucketName = TRANSCRIPTION_BUCKET_NAME;
+    const meeting = await findMeetingById(meetingId);
+
+    if (!meeting.concatPipelineArn) {
+      throw new Error(`Meeting ${meetingId} does not have a concatPipelineArn`);
+    }
+
+    const arnParts = meeting.concatPipelineArn.split("/");
+    const mediaPipelineId = arnParts[arnParts.length - 1];
+
+    const objectKey = `${meetingId}/${mediaPipelineId}.mp4-speaker-transcription.txt`;
+
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: objectKey,
+      // Force to download the file, not open in the new browser tab
+      ResponseContentDisposition: `attachment; filename="${objectKey.split("/").pop()}"`,
+    });
+
+    const signedUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 3600,
+    });
+
+    return signedUrl;
+  }
+
+  async issueSummarizedTranscriptUrl(meetingId: string): Promise<string> {
+    const bucketName = KNOWLEDGE_BUCKET_NAME;
+    const meeting = await findMeetingById(meetingId);
+
+    if (!meeting.concatPipelineArn) {
+      throw new Error(`Meeting ${meetingId} does not have a concatPipelineArn`);
+    }
+
+    const arnParts = meeting.concatPipelineArn.split("/");
+    const mediaPipelineId = arnParts[arnParts.length - 1];
+
+    const objectKey = `${meetingId}/${mediaPipelineId}.mp4-summary.txt`;
+
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: objectKey,
+      // Force to download the file, not open in the new browser tab
+      ResponseContentDisposition: `attachment; filename="${objectKey.split("/").pop()}"`,
     });
 
     const signedUrl = await getSignedUrl(this.s3Client, command, {

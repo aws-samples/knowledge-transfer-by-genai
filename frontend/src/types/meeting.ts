@@ -13,4 +13,7 @@ export type Meeting = MeetingResponse & {
   concatPipelineId: string;
   isConcatenated: boolean;
   isSummarized: boolean;
+  status: VideoStatus;
 };
+
+export type VideoStatus = "Saving" | "Summarizing" | "Completed";

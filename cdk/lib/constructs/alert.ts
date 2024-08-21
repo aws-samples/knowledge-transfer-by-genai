@@ -53,8 +53,8 @@ export class Alert extends Construct {
         REGION: Stack.of(this).region,
         ALERT_TABLE_NAME: database.alertTable.tableName,
         MEETING_TABLE_NAME: props.database.meetingTable.tableName,
-        // CHAT_TABLE_NAME: props.database.chatTable.tableName,
         CONCATENATED_BUCKET_NAME: buckets.concatenatedBucket.bucketName,
+        TRANSCRIPTION_BUCKET_NAME: buckets.transcriptionBucket.bucketName,
         KNOWLEDGE_BUCKET_NAME: buckets.knowledgeBucket.bucketName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         KNOWLEDGE_BASE_ID: props.knowledge.knowledgeBaseId,
@@ -65,6 +65,7 @@ export class Alert extends Construct {
     database.alertTable.grantReadWriteData(handler.role!);
     database.meetingTable.grantReadWriteData(handler.role!);
     buckets.concatenatedBucket.grantRead(handler.role!);
+    buckets.transcriptionBucket.grantRead(handler.role!);
     buckets.knowledgeBucket.grantRead(handler.role!);
     handler.addToRolePolicy(
       new iam.PolicyStatement({

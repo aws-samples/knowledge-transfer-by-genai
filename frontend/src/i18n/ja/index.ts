@@ -30,6 +30,9 @@ const translation = {
         referenceVideo: "参考通話記録",
       },
     },
+    meetingVideo: {
+      title: "通話記録",
+    },
   },
 };
 export default translation;

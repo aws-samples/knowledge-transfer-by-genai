@@ -11,12 +11,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TbMovie } from "react-icons/tb";
+import { FaDownload } from "react-icons/fa";
 import ReactPlayer from "react-player";
 
 import { Meeting } from "@/types/meeting";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import useMeeting from "@/features/video-call/hooks/useMeeting";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   meeting: Meeting;
@@ -26,11 +28,14 @@ type Props = {
 
 function MeetingVideoDialog({ meeting, alertId, inverted = false }: Props) {
   const [open, setOpen] = useState(false);
-  const { getMeetingVideoUrl } = useMeeting(alertId);
+  const { t } = useTranslation();
+  const { getMeetingVideoUrl, getSummarizedTranscriptUrl } =
+    useMeeting(alertId);
 
   const isDisabled = !meeting.isConcatenated;
 
   const { meetingVideoUrl } = getMeetingVideoUrl(meeting.id);
+  const { summarizedTranscriptUrl } = getSummarizedTranscriptUrl(meeting.id);
 
   const handleOpen = async () => {
     if (meeting.isConcatenated && !meetingVideoUrl) {
@@ -69,11 +74,22 @@ function MeetingVideoDialog({ meeting, alertId, inverted = false }: Props) {
 
         <DialogContent
           className={cn(
-            "border-2 border-slate-300 bg-slate-800 text-white",
-            "grid-rows-[32px,1fr,48px] min-h-[416px]"
+            "border-2 border-slate-300 bg-slate-800 text-white"
+            // "grid-rows-[32px,1fr,48px] min-h-[416px]"
           )}
         >
-          <DialogHeader className="h-8">Meeting Video</DialogHeader>
+          <DialogHeader className="h-8">{t("meetingVideo.title")}</DialogHeader>
+          <div className="mb-4">
+            <p>作成日時: {new Date(meeting.createdAt).toLocaleString()}</p>
+            <p>
+              ステータス:{" "}
+              {meeting.status === "Saving"
+                ? "保存中"
+                : meeting.status === "Summarizing"
+                  ? "要約中"
+                  : "完了"}
+            </p>
+          </div>
           {meetingVideoUrl ? (
             <ReactPlayer
               url={meetingVideoUrl}
@@ -83,6 +99,27 @@ function MeetingVideoDialog({ meeting, alertId, inverted = false }: Props) {
             />
           ) : (
             <p>Loading video...</p>
+          )}
+          {meeting.isSummarized && summarizedTranscriptUrl && (
+            <div className="my-1 border-t pt-1 italic">
+              <div
+                className="ml-1 cursor-pointer underline flex items-center"
+                onClick={() => {
+                  window.open(summarizedTranscriptUrl, "_blank");
+                }}
+              >
+                <FaDownload
+                  size="15"
+                  className={cn(
+                    "cursor-pointer mr-2",
+                    isDisabled
+                      ? cn("pointer-events-none", "text-foreground")
+                      : "text-background"
+                  )}
+                ></FaDownload>
+                通話記録の要約
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

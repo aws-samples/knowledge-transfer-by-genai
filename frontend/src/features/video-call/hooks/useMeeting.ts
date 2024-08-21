@@ -12,6 +12,11 @@ const useMeeting = (alertId: string) => {
       concatPipelineId: response.concatPipelineArn.split("/").pop() || "",
       isConcatenated: !!response.concatenatedAt,
       isSummarized: !!response.summarizedAt,
+      status: response.summarizedAt
+        ? "Completed"
+        : response.concatenatedAt
+          ? "Summarizing"
+          : "Saving",
     };
   };
 
@@ -21,6 +26,15 @@ const useMeeting = (alertId: string) => {
   const meetings = meetingsResponse
     ? meetingsResponse.map(_convertToMeeting)
     : undefined;
+
+  const getMeeting = useCallback(
+    (meetingId: string) => {
+      const { data } = api.getMeeting(meetingId);
+      const meeting = data ? _convertToMeeting(data) : undefined;
+      return { meeting };
+    },
+    [api]
+  );
 
   const getMeetingVideoUrl = useCallback(
     (meetingId: string) => {
@@ -33,23 +47,34 @@ const useMeeting = (alertId: string) => {
     [api, alertId]
   );
 
-  const getMeeting = useCallback(
+  const getMeetingTranscriptUrl = useCallback(
     (meetingId: string) => {
-      const { data } = api.getMeeting(meetingId);
-      const meeting = data ? _convertToMeeting(data) : undefined;
-      return { meeting };
+      const { data: meetingTranscriptUrl } = api.getMeetingTranscriptUrl(
+        alertId,
+        meetingId
+      );
+      return { meetingTranscriptUrl };
     },
-    [api]
+    [api, alertId]
+  );
+
+  const getSummarizedTranscriptUrl = useCallback(
+    (meetingId: string) => {
+      const { data: summarizedTranscriptUrl } = api.getSummarizedTranscriptUrl(
+        alertId,
+        meetingId
+      );
+      return { summarizedTranscriptUrl };
+    },
+    [api, alertId]
   );
 
   return {
     meetings,
-    // getMeeting: async (meetingId: string): Promise<Meeting> => {
-    //   const response = await api.getMeeting(meetingId);
-    //   return _convertToMeeting(response.data!);
-    // },
     getMeeting,
     getMeetingVideoUrl,
+    getMeetingTranscriptUrl,
+    getSummarizedTranscriptUrl,
     refreshMeetings: () => {
       mutateMeetings();
     },

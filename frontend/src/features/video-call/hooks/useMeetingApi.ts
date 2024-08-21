@@ -16,6 +16,16 @@ const useMeetingApi = () => {
         `/alert/${alertId}/meetings/${meetingId}/video-url`
       );
     },
+    getMeetingTranscriptUrl: (alertId: string, meetingId: string) => {
+      return http.get<string>(
+        `/alert/${alertId}/meetings/${meetingId}/transcript-url`
+      );
+    },
+    getSummarizedTranscriptUrl: (alertId: string, meetingId: string) => {
+      return http.get<string>(
+        `/alert/${alertId}/meetings/${meetingId}/summarized-transcript-url`
+      );
+    },
   };
 };
 
