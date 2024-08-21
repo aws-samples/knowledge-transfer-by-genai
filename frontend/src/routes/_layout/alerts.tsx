@@ -58,8 +58,6 @@ function AlertPage() {
     if (!alerts) {
       return;
     }
-    // debug purpose
-    // console.log("alerts:" + JSON.str
     const updatedAlerts = alerts.map((item) => ({
       ...item,
       severityColor: getSeverityColor(item.severity),
@@ -76,8 +74,6 @@ function AlertPage() {
       }
       return isVisible;
     });
-    // TODO: remove
-    // console.log("Filtered Data: ", JSON.stringify(filteredAlerts));
     setFilteredData(filteredAlerts);
 
     const severityCounts = (["CRITICAL", "HIGH", "MEDIUM", "LOW"] as Severity[])

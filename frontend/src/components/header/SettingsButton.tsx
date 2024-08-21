@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-// import useAlerts from "@/hooks/useAlert";
 import { LuMoreVertical } from "react-icons/lu";
 
 export interface SettingsButtonProps {
@@ -17,14 +16,6 @@ export interface SettingsButtonProps {
 }
 
 function SettingsButton({ signOut, userName, email }: SettingsButtonProps) {
-  //   const { deleteAlerts } = useAlerts();
-
-  //   const deleteAll = () => {
-  //     if (window.confirm("Are you sure you want to delete all alerts?")) {
-  //       deleteAlerts();
-  //     }
-  //   };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,10 +36,6 @@ function SettingsButton({ signOut, userName, email }: SettingsButtonProps) {
             {email}
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {/* <DropdownMenuItem onClick={deleteAll} className="text-red-500">
-          Delete alerts
-        </DropdownMenuItem> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={signOut}>Sign Out</DropdownMenuItem>
       </DropdownMenuContent>

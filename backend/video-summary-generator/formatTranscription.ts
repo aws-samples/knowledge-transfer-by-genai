@@ -18,7 +18,7 @@ export const formatTranscription = async (event) => {
 
   // Get transcription URI from the event
   // The transcript URI will look something like this:
-  // https://s3.ap-northeast-1.amazonaws.com/knowledgetransferstack-transcriptionbucket52b399a7-5xh2kvlyknka/9962f19d-a467-4b73-bc12-4daaaaad2713/d519bfcd-60c2-4b2c-ae96-b21b341704cd.mp4.json
+  // https://s3.ap-northeast-1.amazonaws.com/xxxx/yyyy.mp4.json
   const bucketName = transcriptUri.split("/")[3];
   const meetingId = transcriptUri.split("/")[4];
   const fileName = transcriptUri.split("/")[5];
@@ -48,7 +48,6 @@ export const formatTranscription = async (event) => {
       console.error(
         "Speaker labels are off in processing; shouldn't happen given TranscribeJob setting above but catch in case."
       );
-      // Speaker labels are off in processing; shouldn't happen given TranscribeJob setting above but catch in case.
       return;
     }
 

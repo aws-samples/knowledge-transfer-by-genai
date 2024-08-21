@@ -13,7 +13,6 @@ import {
   LuMicOff,
   LuVideo,
   LuVideoOff,
-  // LuPhone,
   LuPhoneOff,
 } from "react-icons/lu";
 import { TbBlur, TbBlurOff } from "react-icons/tb";

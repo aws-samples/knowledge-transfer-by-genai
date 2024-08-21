@@ -81,9 +81,6 @@ export const createConcat = async (props: {
       {
         Type: "S3Bucket",
         S3BucketSinkConfiguration: {
-          // Destination: `${CONCATENATED_BUCKET_ARN}/${meetingId}`,
-          // Destination: CONCATENATED_BUCKET_ARN,
-          // Destination: "arn:aws:s3:::tksuzuki-us-east-1",
           Destination: props.destination,
         },
       },

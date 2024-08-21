@@ -65,18 +65,6 @@ export class VideoCall extends Construct {
     props.database.alertTable.grantReadWriteData(chimeResolverFunction);
     props.database.meetingTable.grantReadWriteData(chimeResolverFunction);
 
-    // chimeResolverFunction.addToRolePolicy(
-    //   new PolicyStatement({
-    //     effect: Effect.ALLOW,
-    //     actions: ["chime:CreateMediaCapturePipeline"],
-    //     resources: [
-    //       `arn:aws:chime:${Stack.of(this).region}:${
-    //         Stack.of(this).account
-    //       }:media-pipeline/*`,
-    //     ],
-    //   })
-    // );
-
     new iam.CfnServiceLinkedRole(this, "ChimeSDKMediaPipelineRole", {
       awsServiceName: "mediapipelines.chime.amazonaws.com",
       description: "Service-linked role for Amazon Chime SDK Media Pipelines",

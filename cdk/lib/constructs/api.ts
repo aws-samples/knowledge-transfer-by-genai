@@ -1,12 +1,5 @@
 import { Construct } from "constructs";
 import { Auth } from "./auth";
-import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
-import { HttpUserPoolAuthorizer } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
-import {
-  CorsHttpMethod,
-  HttpApi,
-  HttpMethod,
-} from "aws-cdk-lib/aws-apigatewayv2";
 import * as iam from "aws-cdk-lib/aws-iam";
 import {
   DockerImageCode,
@@ -15,13 +8,12 @@ import {
 } from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
-import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import { Database } from "./database";
-import { CloudFrontGateway } from "./cloudfront-gateway";
 import { Knowledge } from "./knowledge";
 import { S3Buckets } from "./s3buckets";
+import { Duration, Stack } from "aws-cdk-lib";
 
-export interface AlertProps {
+export interface ApiProps {
   auth: Auth;
   database: Database;
   knowledge: Knowledge;
@@ -30,10 +22,9 @@ export interface AlertProps {
   corsAllowOrigins?: string[];
 }
 
-export class Alert extends Construct {
-  // readonly api: HttpApi;
+export class Api extends Construct {
   readonly handler: IFunction;
-  constructor(scope: Construct, id: string, props: AlertProps) {
+  constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id);
 
     const { database, buckets, corsAllowOrigins: allowOrigins = ["*"] } = props;
@@ -43,7 +34,7 @@ export class Alert extends Construct {
         path.join(__dirname, "../../../backend"),
         {
           platform: Platform.LINUX_AMD64,
-          file: "alert/Dockerfile",
+          file: "api/Dockerfile",
         }
       ),
       memorySize: 1024,
@@ -84,48 +75,5 @@ export class Alert extends Construct {
     );
 
     this.handler = handler;
-
-    // const api = new HttpApi(this, "Default", {
-    //   corsPreflight: {
-    //     allowHeaders: ["*"],
-    //     allowMethods: [
-    //       CorsHttpMethod.GET,
-    //       CorsHttpMethod.HEAD,
-    //       CorsHttpMethod.OPTIONS,
-    //       CorsHttpMethod.POST,
-    //       CorsHttpMethod.PUT,
-    //       CorsHttpMethod.PATCH,
-    //       CorsHttpMethod.DELETE,
-    //     ],
-    //     allowOrigins: ["*"],
-    //     maxAge: Duration.days(10),
-    //   },
-    // });
-
-    // const integration = new HttpLambdaIntegration("Integration", handler);
-    // const authorizer = new HttpUserPoolAuthorizer(
-    //   "Authorizer",
-    //   props.auth.userPool,
-    //   {
-    //     userPoolClients: [props.auth.client],
-    //   }
-    // );
-    // let routeProps: any = {
-    //   path: "/{proxy+}",
-    //   integration,
-    //   methods: [
-    //     HttpMethod.GET,
-    //     HttpMethod.POST,
-    //     HttpMethod.PUT,
-    //     HttpMethod.PATCH,
-    //     HttpMethod.DELETE,
-    //   ],
-    //   authorizer,
-    // };
-    // api.addRoutes(routeProps);
-
-    // this.api = api;
-
-    // new CfnOutput(this, "AlertBackendApiUrl", { value: api.apiEndpoint });
   }
 }

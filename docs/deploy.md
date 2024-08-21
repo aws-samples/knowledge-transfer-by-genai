@@ -15,9 +15,14 @@ cd cdk
 npm ci
 ```
 
-- [AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
+```sh
+
+```
+
+- [esbuild](https://esbuild.github.io/)、[AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
 
 ```sh
+npm i -g esbuild
 npm i -g aws-cdk
 ```
 

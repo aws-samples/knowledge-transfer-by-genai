@@ -33,7 +33,6 @@ function ContactCard() {
   };
 
   useEffect(() => {
-    //TODO: add new attendee to chime meeting
     currentAuthenticatedUser();
     if (currentUserId.length !== 0) {
       getAlertAsignee();
@@ -105,9 +104,7 @@ function ContactCard() {
                         setOpenMenu(false);
                       }}
                     >
-                      <span className="truncate">
-                        {person.name}
-                      </span>
+                      <span className="truncate">{person.name}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>

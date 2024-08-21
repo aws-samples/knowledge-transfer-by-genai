@@ -6,11 +6,7 @@ import {
 import { v4 } from "uuid";
 import { AppSyncResolverHandler } from "aws-lambda";
 import { startCapture, createConcat } from "./lib/record";
-import { startTranscribe } from "./lib/transcribe";
-import {
-  appendMeetingToAlert,
-  storeMeeting,
-} from "@industrial-knowledge-transfer-by-genai/common";
+import { storeMeeting } from "@industrial-knowledge-transfer-by-genai/common";
 
 const { RECORDING_BUCKET_ARN, CONCATENATED_BUCKET_ARN, ACCOUNT_ID } =
   process.env;
@@ -116,7 +112,7 @@ const createChimeMeeting = async (
 
   console.debug(`meetingResponse: ${JSON.stringify(meetingResponse)}`);
 
-  // Start recording
+  // Start recording pipeline
   const captureDestination = `${RECORDING_BUCKET_ARN}/${meetingResponse.Meeting.MeetingId}`;
   const startCaptureResponse = await startCapture({
     meetingId: meetingResponse.Meeting.MeetingId,
@@ -137,16 +133,13 @@ const createChimeMeeting = async (
   console.debug(`concatResponse: ${JSON.stringify(concatResponse)}`);
 
   // Store to dynamodb
-  await Promise.all([
-    storeMeeting({
-      id: meetingResponse.Meeting.MeetingId,
-      alertId: request.alertId,
-      capturePipelineArn: startCaptureResponse?.MediaPipelineArn!,
-      concatPipelineArn: concatResponse?.MediaPipelineArn!,
-      createdAt: new Date().toISOString(),
-    }),
-    // appendMeetingToAlert(request.alertId, meetingResponse.Meeting.MeetingId),
-  ]);
+  await storeMeeting({
+    id: meetingResponse.Meeting.MeetingId,
+    alertId: request.alertId,
+    capturePipelineArn: startCaptureResponse?.MediaPipelineArn!,
+    concatPipelineArn: concatResponse?.MediaPipelineArn!,
+    createdAt: new Date().toISOString(),
+  });
 
   return await joinMeeting({
     meetingResponse: JSON.stringify(meetingResponse),

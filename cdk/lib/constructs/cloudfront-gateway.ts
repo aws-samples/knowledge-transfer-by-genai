@@ -247,18 +247,18 @@ export class CloudFrontGateway extends Construct {
   }
 
   buildViteApp({
-    alertApiEndpoint,
+    apiEndpoint,
     videoCallEndpoint,
     auth,
   }: {
-    alertApiEndpoint: string;
+    apiEndpoint: string;
     videoCallEndpoint: string;
     auth: Auth;
   }) {
     const region = Stack.of(auth.userPool).region;
     const buildEnvProps = (() => {
       const defaultProps = {
-        VITE_APP_ALERT_API_ENDPOINT: alertApiEndpoint,
+        VITE_APP_ALERT_API_ENDPOINT: apiEndpoint,
         VITE_APP_CHIME_BACKEND: videoCallEndpoint,
         VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,

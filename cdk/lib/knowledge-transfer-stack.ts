@@ -2,7 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { VideoCall } from "./constructs/video-call";
 import { Auth } from "./constructs/auth";
-import { Alert } from "./constructs/alert";
+import { Api } from "./constructs/api";
 import { Database } from "./constructs/database";
 import { VideoSummaryGenerator } from "./constructs/video-summary-generator";
 import { S3Buckets } from "./constructs/s3buckets";
@@ -17,10 +17,7 @@ export type BedrockModelId =
   | "anthropic.claude-3-sonnet-20240229-v1:0"
   | "anthropic.claude-3-haiku-20240307-v1:0"
   | "anthropic.claude-3-opus-20240229-v1:0"
-  | "anthropic.claude-3-5-sonnet-20240620-v1:0"
-  | "mistral.mistral-7b-instruct-v0:2"
-  | "mistral.mixtral-8x7b-instruct-v0:1"
-  | "mistral.mistral-large-2402-v1:0";
+  | "anthropic.claude-3-5-sonnet-20240620-v1:0";
 
 interface KnowledgeTransferStackProps extends cdk.StackProps {
   usEast1Stack: UsEast1Stack;
@@ -52,16 +49,10 @@ export class KnowledgeTransferStack extends cdk.Stack {
     // Knowledge Base
     const knowledge = new Knowledge(this, "Knowledge", {
       knowledgeBucket: buckets.knowledgeBucket,
-      // TODO
-      // analyzer: {
-      //   characterFilters: ["icu_normalizer"],
-      //   tokenizer: "kuromoji_tokenizer",
-      //   tokenFilters: ["kuromoji_baseform", "ja_stop"],
-      // },
     });
 
-    // Alert Apis
-    const alert = new Alert(this, "Alert", {
+    // Alert / Video management Api
+    const api = new Api(this, "Api", {
       auth,
       database,
       knowledge,
@@ -86,7 +77,7 @@ export class KnowledgeTransferStack extends cdk.Stack {
     );
 
     const cfgw = new CloudFrontGateway(this, "CloudFrontGateway", {
-      webAclId: "TODO",
+      webAclId: props.usEast1Stack.webAclArn.value,
       videoBucket: buckets.concatenatedBucket,
       accessLogBucket: buckets.accessLogBucket,
       usEast1Stack: props.usEast1Stack,
@@ -94,19 +85,17 @@ export class KnowledgeTransferStack extends cdk.Stack {
     });
     // Associate lambda with cloudfront
     cfgw.addLambda(
-      alert.handler,
-      alert.handler.addFunctionUrl({
+      api.handler,
+      api.handler.addFunctionUrl({
         authType: FunctionUrlAuthType.AWS_IAM,
         invokeMode: InvokeMode.RESPONSE_STREAM,
       }),
       "/api/*",
       auth
     );
-    // Associate video recording bucket with cloudfront
-    // cfgw.addBucket(buckets.concatenatedBucket, "/video/*", auth);
 
     cfgw.buildViteApp({
-      alertApiEndpoint: `${cfgw.getOrigin()}/api`,
+      apiEndpoint: `${cfgw.getOrigin()}/api`,
       videoCallEndpoint: videoCall.api.graphqlUrl,
       auth,
     });

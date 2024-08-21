@@ -5,7 +5,6 @@ import {
   QueryCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { v4 as uuidv4 } from "uuid";
 import { Conversation, Alert } from "../@types";
 
 const ALERT_TABLE_NAME = process.env.ALERT_TABLE_NAME || "alert_table";
@@ -36,16 +35,6 @@ export class ChatRepository {
     }
 
     throw new Error(`Conversation with alertId ${alertId} not found`);
-
-    // // Create a new conversation if not found
-    // const newConversation: Conversation = {
-    //   messages: [],
-    // };
-
-    // // Update the alert with the new conversation
-    // // await this.storeConversation(alertId, newConversation);
-
-    // return newConversation;
   }
 
   async storeConversation(

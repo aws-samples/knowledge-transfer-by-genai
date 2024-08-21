@@ -85,8 +85,6 @@ export class S3Buckets extends Construct {
     });
     recordingBucket.addToResourcePolicy(recordingBucketPolicyStatement);
 
-    // Need to allow access from mediapipelines.chime.amazonaws.com
-    // Ref: https://docs.aws.amazon.com/chime-sdk/latest/dg/create-concat-pipe-steps.html
     const concatenatedBucketPolicyStatement = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ["s3:PutObject", "s3:PutObjectAcl"],

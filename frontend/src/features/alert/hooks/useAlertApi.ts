@@ -8,9 +8,7 @@ const useAlertApi = () => {
 
   return {
     getAlerts: () => {
-      return http.get<Alert[]>("/alert", {
-        // refreshInterval: 5000,
-      });
+      return http.get<Alert[]>("/alert", {});
     },
 
     getAlert: (alertId: string) => {

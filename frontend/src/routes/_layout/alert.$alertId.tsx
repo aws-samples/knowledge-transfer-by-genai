@@ -36,7 +36,6 @@ function AlertDetailPage(props: ComponentProps) {
     if (alert) {
       console.log("Closing alert", alert.id, "with comment", comment);
       closeWithComment(alert.id, comment);
-      //TODO: display snackbar
     }
   };
 

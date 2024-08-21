@@ -48,6 +48,7 @@ export function useBackgroundBlurToggle() {
     isBackgroundBlurSupported,
     createBackgroundBlurDevice,
     meetingManager,
+    isBlurred,
   ]);
 
   return { isBlurred, toggleBlur };

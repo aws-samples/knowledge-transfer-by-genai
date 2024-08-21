@@ -7,7 +7,6 @@ import {
   QueryCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { Meeting } from "../@types";
 
 const MEETING_TABLE_NAME = process.env.MEETING_TABLE_NAME || "meeting_table";
