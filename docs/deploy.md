@@ -37,16 +37,27 @@ cdk bootstrap aws://<account id>/ap-northeast-1
   - `bedrockRegion`: Bedrock が利用できるリージョン
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: 許可する IP アドレス範囲の指定
 
-- プロジェクトをデプロイします
+- プロジェクトをデプロイします。環境にもよりますが、20 分ほどかかります。
 
 ```sh
 cdk deploy --require-approval never --all
 ```
 
-- 下記のような出力が得られれば成功です。`KnowledgeTransferStack.FrontendURL` に WEB アプリの URL が出力されますので、ブラウザからアクセスしてください。
+- 下記のような出力が得られれば成功です。`KnowledgeTransferStack.DistributionUrl` に WEB アプリの URL が出力されますので、ブラウザからアクセスしてください。
 
 ```sh
-TODO
+ ✅  KnowledgeTransferStack
+
+✨  Deployment time: 732.74s
+
+Outputs:
+...
+KnowledgeTransferStack.DistributionUrl = https://xxxxxxx.cloudfront.net
+...
+Stack ARN:
+arn:aws:cloudformation:ap-northeast-1:1234:stack/KnowledgeTransferStack/yyyy
+
+✨  Total time: 762.56s
 ```
 
 以上でデプロイ手順の解説を終えます。続いて[デモを動かす](./run_demo.md)へお進みください。

@@ -45,8 +45,8 @@ export class AlertService {
   async createDummyAlert(): Promise<Alert> {
     const alert: Alert = {
       id: uuidv4(),
-      name: "Dummy Alert",
-      description: "This is a dummy alert",
+      name: "ダミーアラート",
+      description: "このアラートはダミーです。",
       openedAt: new Date().toISOString(),
       closedAt: "",
       status: "OPEN",
@@ -60,7 +60,8 @@ export class AlertService {
         messages: [],
       },
     };
-    return await storeAlert(alert);
+    await storeAlert(alert);
+    return alert;
   }
 
   async deleteAlert(alertId: string): Promise<void> {

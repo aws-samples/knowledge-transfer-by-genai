@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useNavigate } from "@tanstack/react-router";
 
 function CloseAlertDialog({
   onSubmit,
@@ -19,6 +20,7 @@ function CloseAlertDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const navigate = useNavigate();
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.currentTarget.value);
@@ -28,18 +30,19 @@ function CloseAlertDialog({
     onSubmit(value);
     setOpen(false);
     setValue("");
+    navigate({ to: "/alerts" });
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" disabled={disabled}>
-          Close Alert
+          アラートを解決する
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Close Alert</DialogTitle>
+          <DialogTitle>アラートを解決する</DialogTitle>
           <DialogDescription>
             このアラートをクローズします。理由と詳細をコメントに必ず記入してください。
           </DialogDescription>

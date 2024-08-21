@@ -3,7 +3,7 @@ FROM public.ecr.aws/docker/library/node:21-bullseye-slim as builder
 WORKDIR /app
 COPY . .
 
-WORKDIR /app/alert
+WORKDIR /app/api
 RUN npm i && npm run build
 
 FROM public.ecr.aws/docker/library/node:21-bullseye-slim as runner
@@ -19,9 +19,9 @@ ENV AWS_LWA_INVOKE_MODE response_stream
 
 WORKDIR ${LAMBDA_TASK_ROOT}
 COPY --from=builder /app/common ./common
-COPY --from=builder /app/alert/package.json ./package.json
-COPY --from=builder /app/alert/dist ./dist
-COPY --from=builder /app/alert/node_modules ./node_modules
+COPY --from=builder /app/api/package.json ./package.json
+COPY --from=builder /app/api/dist ./dist
+COPY --from=builder /app/api/node_modules ./node_modules
 
 EXPOSE 8080
 CMD ["npm", "run", "start:prod"]

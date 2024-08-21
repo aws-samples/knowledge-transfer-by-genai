@@ -91,14 +91,17 @@ export const closeWithComment = async (
     new UpdateCommand({
       TableName: ALERT_TABLE_NAME,
       Key: { id: alertId },
-      UpdateExpression: "SET #status = :status, #comment = :comment",
+      UpdateExpression:
+        "SET #status = :status, #comment = :comment, #closedAt = :closedAt",
       ExpressionAttributeNames: {
         "#status": "status",
         "#comment": "comment",
+        "#closedAt": "closedAt",
       },
       ExpressionAttributeValues: {
         ":status": "CLOSED",
         ":comment": comment,
+        ":closedAt": new Date().toISOString(),
       },
     })
   );

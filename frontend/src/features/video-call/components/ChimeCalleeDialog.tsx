@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,6 +38,28 @@ function ChimeCalleeDialog(props: Props) {
 
   const { myName } = props;
 
+  // 他の参加者からの会議開始・終了通知を受け取る
+  const receiveMessage = useCallback(
+    async (response: OnMeetingMessageReceivedSubscription) => {
+      const state = response.onMeetingMessageReceived?.state;
+      if (state === "MEETING_START") {
+        const callerId = response.onMeetingMessageReceived!.source;
+        const callerEmail = await getEmail(callerId);
+        setCaller({
+          id: response.onMeetingMessageReceived!.source,
+          name: callerEmail ?? "",
+        });
+        setMeetingInfo(
+          JSON.parse(response.onMeetingMessageReceived!.meetingInfo)
+        );
+        openRing();
+      } else if (state === "MEETING_END") {
+        closeRing();
+      }
+    },
+    [getEmail, openRing, closeRing, setMeetingInfo]
+  );
+
   // 会議の開始・終了通知を受け取る
   useEffect(() => {
     if (myName) {
@@ -46,7 +68,7 @@ function ChimeCalleeDialog(props: Props) {
         subscriber.unsubscribe();
       };
     }
-  }, [myName]);
+  }, [myName, receiveMessage, subscribeMessage]);
 
   const onClickCallOn = () => {
     setAttendees([caller!]);
@@ -64,27 +86,6 @@ function ChimeCalleeDialog(props: Props) {
     });
     closeRing();
     setCaller(null);
-  };
-
-  // 他の参加者からの会議開始・終了通知を受け取る
-  const receiveMessage = async (
-    response: OnMeetingMessageReceivedSubscription
-  ) => {
-    const state = response.onMeetingMessageReceived?.state;
-    if (state === "MEETING_START") {
-      const callerId = response.onMeetingMessageReceived!.source;
-      const callerEmail = await getEmail(callerId);
-      setCaller({
-        id: response.onMeetingMessageReceived!.source,
-        name: callerEmail ?? "",
-      });
-      setMeetingInfo(
-        JSON.parse(response.onMeetingMessageReceived!.meetingInfo)
-      );
-      openRing();
-    } else if (state === "MEETING_END") {
-      closeRing();
-    }
   };
 
   return (

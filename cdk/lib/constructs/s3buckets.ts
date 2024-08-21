@@ -98,6 +98,15 @@ export class S3Buckets extends Construct {
     });
     concatenatedBucket.addToResourcePolicy(concatenatedBucketPolicyStatement);
 
+    new CfnOutput(this, "RecordingBucketName", {
+      value: recordingBucket.bucketName,
+    });
+    new CfnOutput(this, "TranscriptionBucketName", {
+      value: transcriptionBucket.bucketName,
+    });
+    new CfnOutput(this, "ConcatenatedBucketName", {
+      value: concatenatedBucket.bucketName,
+    });
     new CfnOutput(this, "KnowledgeBucketName", {
       value: knowledgeBucket.bucketName,
     });

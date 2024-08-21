@@ -26,6 +26,17 @@ const useAlert = () => {
         mutateAlerts();
       });
     },
+    createDummyAlert: () => {
+      return api.createDummyAlert().then((response) => {
+        mutateAlerts(
+          produce(alerts, (draft) => {
+            draft?.unshift(response.data);
+          }),
+          { revalidate: false }
+        );
+        return response;
+      });
+    },
     clearAlerts: () => {
       mutateAlerts([], { revalidate: false });
       return api.clearAlerts().finally(() => {

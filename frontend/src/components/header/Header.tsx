@@ -5,6 +5,7 @@ import { fetchUserAttributes } from "aws-amplify/auth";
 import ThemeButton from "./ThemeButton";
 import LanguageButton from "./LanguageButton";
 import SettingsButton from "./SettingsButton";
+import AlertManagementButton from "./AlertManagementButton";
 
 export interface HeaderProps {
   signOut?: () => void;
@@ -49,6 +50,7 @@ function Header({ signOut, userName }: HeaderProps) {
         </div>
         <LanguageButton />
         <ThemeButton />
+        <AlertManagementButton />
       </div>
       {signOut && (
         <SettingsButton signOut={signOut} userName={userName} email={email} />

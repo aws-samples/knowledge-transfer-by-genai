@@ -27,6 +27,10 @@ const useAlertApi = () => {
       return http.patch(`/alert/${alertId}/status`, { status });
     },
 
+    createDummyAlert: () => {
+      return http.post<Alert>("/alert/dummy", {});
+    },
+
     closeWithComment: (alertId: string, comment: string) => {
       return http.patch(`/alert/${alertId}/close`, { comment });
     },

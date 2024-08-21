@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import useChime from "@/features/video-call/hooks/useChime";
 import { Button } from "@/components/ui/button";
@@ -56,57 +56,18 @@ function ChimeDialog(props: Props) {
 
   const { myName, alertId } = props;
 
-  // Receive meeting end notification
-  useEffect(() => {
-    if (myName) {
-      const subscriber = subscribeMessage(myName, receiveMessage);
-      return () => {
-        subscriber.unsubscribe();
-      };
-    }
-  }, [myName]);
-
-  // When attendees are registered, start or join the meeting
-  useEffect(() => {
-    if (attendees.length > 0) {
-      initiateMeeting();
-    }
-  }, [attendees]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      meetingManager.leave();
-    }
-  }, [isOpen]);
-
-  // Make sure the dialog does not close when you click outside the dialog
-  const onInteractOutside = (e: Event) => {
-    e.preventDefault();
-  };
-
-  // This method is deprecated because the Close button has been removed from dialog-expandable
-  const onOpenChange = (isopen: boolean) => {
-    if (isopen) {
-      open();
-    } else {
-      close();
-    }
-  };
-
-  const onClickEndCall = async () => {
-    disconnect();
-    // Notify other participants that the meeting has ended
-    sendMessage({
-      myName,
-      targetId: attendees[0].id,
-      state: "MEETING_END",
-      meetingInfo: JSON.stringify(meetingInfo),
-    });
-    close();
-  };
+  // 他の参加者からの会議終了通知を受け取る
+  const receiveMessage = useCallback(
+    (response: OnMeetingMessageReceivedSubscription) => {
+      if (response.onMeetingMessageReceived?.state === "MEETING_END") {
+        close();
+      }
+    },
+    [close]
+  );
 
   // 会議の作成と参加、または招集された会議への参加を開始する
-  const initiateMeeting = async (): Promise<void> => {
+  const initiateMeeting = useCallback(async (): Promise<void> => {
     if (!meetingInfo) {
       // 会議の作成・参加を開始する
       const { meeting, attendee } = await createAndJoin(alertId);
@@ -135,13 +96,65 @@ function ChimeDialog(props: Props) {
       await meetingManager.join(meetingSessionConfiguration);
       await meetingManager.start();
     }
+  }, [
+    attendees,
+    meetingInfo,
+    createAndJoin,
+    join,
+    meetingManager,
+    sendMessage,
+    myName,
+    alertId,
+    setMeetingInfo,
+  ]);
+
+  // Receive meeting end notification
+  useEffect(() => {
+    if (myName) {
+      const subscriber = subscribeMessage(myName, receiveMessage);
+      return () => {
+        subscriber.unsubscribe();
+      };
+    }
+  }, [myName, subscribeMessage, receiveMessage]);
+
+  // When attendees are registered, start or join the meeting
+  useEffect(() => {
+    if (attendees.length > 0) {
+      initiateMeeting();
+    }
+  }, [attendees, initiateMeeting]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      meetingManager.leave();
+    }
+  }, [isOpen, meetingManager]);
+
+  // Make sure the dialog does not close when you click outside the dialog
+  const onInteractOutside = (e: Event) => {
+    e.preventDefault();
   };
 
-  // 他の参加者からの会議終了通知を受け取る
-  const receiveMessage = (response: OnMeetingMessageReceivedSubscription) => {
-    if (response.onMeetingMessageReceived?.state === "MEETING_END") {
+  // This method is deprecated because the Close button has been removed from dialog-expandable
+  const onOpenChange = (isopen: boolean) => {
+    if (isopen) {
+      open();
+    } else {
       close();
     }
+  };
+
+  const onClickEndCall = async () => {
+    disconnect();
+    // Notify other participants that the meeting has ended
+    sendMessage({
+      myName,
+      targetId: attendees[0].id,
+      state: "MEETING_END",
+      meetingInfo: JSON.stringify(meetingInfo),
+    });
+    close();
   };
 
   const gridClass = minimize ? "" : "grid-rows-[32px,1fr,48px] min-h-[416px]";

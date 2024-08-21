@@ -1,7 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
+// Define the route with a redirect
 export const Route = createFileRoute("/")({
   component: Home,
+  loader: () => {
+    return redirect({ to: "/alerts" });
+  },
 });
 
 function Home() {
