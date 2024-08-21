@@ -15,10 +15,6 @@ cd cdk
 npm ci
 ```
 
-```sh
-
-```
-
 - [esbuild](https://esbuild.github.io/)、[AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
 
 ```sh
