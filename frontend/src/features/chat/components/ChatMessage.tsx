@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import ChatMessageMarkdown from "./ChatMessageMarkdown";
 import { PiUserFill } from "react-icons/pi";
-import { MessageContent, UsedChunk, UsedChunkWithLink } from "@/types/chat";
+import { MessageContent, UsedChunk } from "@/types/chat";
 import useRelatedDocument from "../hooks/useRelatedDocument";
 
 type Props = {
@@ -13,11 +13,6 @@ type Props = {
 
 const ChatMessage: React.FC<Props> = (props) => {
   const { getRelatedDocumentsWithLinks } = useRelatedDocument();
-
-  // const relatedDocumentsWithLinks = useMemo(
-  //   () => getRelatedDocumentsWithLinks(props.relatedDocuments),
-  //   [getRelatedDocumentsWithLinks, props.relatedDocuments]
-  // );
 
   const relatedDocumentsWithLinks = getRelatedDocumentsWithLinks(
     props.relatedDocuments

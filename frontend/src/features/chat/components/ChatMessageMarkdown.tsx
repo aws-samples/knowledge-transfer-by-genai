@@ -53,9 +53,7 @@ const RelatedDocumentLink: React.FC<{
 
   let meeting;
   if (url) {
-    const { meeting: data } = getMeeting(
-      extractBucketAndKey(url).mediaPipelineId
-    );
+    const { meeting: data } = getMeeting(extractBucketAndKey(url).meetingId);
     meeting = data;
   }
 

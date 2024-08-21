@@ -14,11 +14,11 @@ const useChatApi = () => {
     },
     getReferenceDocumentUrl: (
       bucket: string,
-      mediaPipelineId: string,
+      meetingId: string,
       fileName: string
     ) => {
       return http.get<string>(
-        `chat/reference/${bucket}/${mediaPipelineId}/${fileName}`
+        `chat/reference/${bucket}/${meetingId}/${fileName}`
       );
     },
     mutateConversation: (

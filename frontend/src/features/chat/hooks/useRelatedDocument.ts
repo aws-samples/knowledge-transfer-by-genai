@@ -11,11 +11,11 @@ const useRelatedDocument = () => {
     if (match && match.length === 4) {
       return {
         bucketName: match[1],
-        mediaPipelineId: match[2],
+        meetingId: match[2],
         fileName: match[3],
       };
     }
-    return { bucketName: "", mediaPipelineId: "", fileName: "" };
+    return { bucketName: "", meetingId: "", fileName: "" };
   }, []);
 
   const getRelatedDocumentsWithLinks = useCallback(
@@ -24,12 +24,12 @@ const useRelatedDocument = () => {
 
       if (relatedDocuments) {
         relatedDocuments.forEach((doc) => {
-          const { bucketName, mediaPipelineId, fileName } = extractBucketAndKey(
+          const { bucketName, meetingId, fileName } = extractBucketAndKey(
             doc.source
           );
           const { data } = chatApi.getReferenceDocumentUrl(
             bucketName,
-            mediaPipelineId,
+            meetingId,
             fileName
           );
           if (data) {

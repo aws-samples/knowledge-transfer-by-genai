@@ -47,12 +47,6 @@ function MeetingVideoDialog({ meeting, alertId, inverted = false }: Props) {
               <DialogTrigger asChild onClick={handleOpen}>
                 <TbMovie
                   size="25"
-                  // className={cn(
-                  //   "cursor-pointer",
-                  //   isDisabled
-                  //     ? "pointer-events-none text-muted-foreground"
-                  //     : "text-foreground"
-                  // )}
                   className={cn(
                     "cursor-pointer",
                     isDisabled
