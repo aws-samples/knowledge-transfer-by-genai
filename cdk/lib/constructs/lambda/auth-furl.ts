@@ -4,9 +4,8 @@ import type {
   CloudFrontRequest,
 } from "aws-lambda";
 import { createHash } from "crypto";
-import { CognitoJwtVerifier } from "aws-jwt-verify";
-import { SimpleJwksCache } from "aws-jwt-verify/jwk";
-import { SimpleJsonFetcher } from "aws-jwt-verify/https";
+import * as jwt from "jsonwebtoken";
+import * as jwksClient from "jwks-rsa";
 
 const extractToken = (request: CloudFrontRequest): string => {
   const headers = request.headers;
@@ -23,6 +22,22 @@ const extractToken = (request: CloudFrontRequest): string => {
   throw new Error("Bearer token not found in the request headers.");
 };
 
+const getSigningKey = (kid: string, jwksUri: string): Promise<string> => {
+  const client = new jwksClient.JwksClient({
+    jwksUri,
+  });
+
+  return new Promise((resolve, reject) => {
+    client.getSigningKey(kid, (err, key) => {
+      if (err) {
+        return reject(err);
+      }
+      const signingKey = key.getPublicKey();
+      resolve(signingKey);
+    });
+  });
+};
+
 const verifyToken = async (
   token: string,
   userPoolId: string,
@@ -30,29 +45,26 @@ const verifyToken = async (
   region: string
 ): Promise<void> => {
   const issuer = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`;
+  const decodedToken = jwt.decode(token, { complete: true });
 
-  const verifier = CognitoJwtVerifier.create(
-    {
-      userPoolId,
-      tokenUse: "id",
-      clientId,
-      issuer,
-    },
-    // Default timeout is 1500ms but sometimes it's not enough
-    // See: https://github.com/awslabs/aws-jwt-verify/issues/72#issuecomment-1139609992
-    {
-      jwksCache: new SimpleJwksCache({
-        fetcher: new SimpleJsonFetcher({
-          defaultRequestOptions: {
-            responseTimeout: 5000,
-          },
-        }),
-      }),
-    }
-  );
+  if (
+    !decodedToken ||
+    typeof decodedToken === "string" ||
+    !decodedToken.header
+  ) {
+    throw new Error("Invalid token format.");
+  }
+
+  const { kid } = decodedToken.header;
+  const jwksUri = `${issuer}/.well-known/jwks.json`;
+  const signingKey = await getSigningKey(kid, jwksUri);
 
   try {
-    const payload = await verifier.verify(token);
+    const payload = jwt.verify(token, signingKey, {
+      algorithms: ["RS256"],
+      audience: clientId,
+      issuer,
+    });
     console.log("Token is valid. Payload:", payload);
   } catch (err) {
     console.error("Token not valid!", err);
