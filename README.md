@@ -77,3 +77,8 @@
 
 - [デプロイ方法](./docs/deploy.md)
 - [デモを動かす](./docs/run_demo.md)
+- [ローカル開発](./docs/dev_local.md)
+
+## License
+
+This library is licensed under the MIT-0 License. See [the LICENSE file](./LICENSE).
