@@ -1,4 +1,3 @@
-import React, { useMemo } from "react";
 import ChatMessageMarkdown from "./ChatMessageMarkdown";
 import { PiUserFill } from "react-icons/pi";
 import { MessageContent, UsedChunk } from "@/types/chat";
@@ -18,9 +17,7 @@ const ChatMessage: React.FC<Props> = (props) => {
     props.relatedDocuments
   );
 
-  const chatContent = useMemo<MessageContent | undefined>(() => {
-    return props.chatContent;
-  }, [props]);
+  const chatContent = props.chatContent;
 
   return (
     <div className={`grid grid-cols-12 gap-2 p-3`}>

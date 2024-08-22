@@ -25,6 +25,7 @@ const extractToken = (request: CloudFrontRequest): string => {
 const getSigningKey = (kid: string, jwksUri: string): Promise<string> => {
   const client = new jwksClient.JwksClient({
     jwksUri,
+    timeout: 5000,
   });
 
   return new Promise((resolve, reject) => {
@@ -99,7 +100,16 @@ export const handler: CloudFrontRequestHandler = async (
   const clientId = getHeaderValue("X-User-Pool-App-Id")!;
 
   const token = extractToken(request);
-  verifyToken(token, userPoolId, clientId, userPoolRegion);
+  try {
+    await verifyToken(token, userPoolId, clientId, userPoolRegion);
+  } catch (err) {
+    console.error("Error verifying token:", err);
+    return {
+      status: "401",
+      statusDescription: "Unauthorized",
+      body: "Unauthorized",
+    };
+  }
 
   const body = request.body?.data ?? "";
 
