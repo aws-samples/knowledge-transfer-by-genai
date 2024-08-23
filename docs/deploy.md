@@ -1,6 +1,6 @@
 # デプロイ手順
 
-- お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[SageMaker Studio Code Editor](https://github.com/aws-samples/sagemaker-studio-code-editor-template)がご利用可能です。
+- お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[AWS EC2 Setup for Prototyping](https://github.com/aws-samples/ec2-setup-for-prototyping)がご利用可能です (SSHログインしご利用ください)。
 - このリポジトリをクローンします
 
 ```sh
