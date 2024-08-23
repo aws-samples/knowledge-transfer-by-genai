@@ -7,18 +7,19 @@
 git clone https://github.com/aws-samples/industrial-knowledge-transfer-by-genai
 ```
 
-- プロジェクトが依存する npm パッケージをインストールします
-
-```sh
-cd industrial-knowledge-transfer-by-genai
-npm install
-```
-
 - [esbuild](https://esbuild.github.io/)、[AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
 
 ```sh
 npm i -g esbuild
 npm i -g aws-cdk
+```
+
+- プロジェクトが依存する npm パッケージをインストール後、ビルドします
+
+```sh
+cd industrial-knowledge-transfer-by-genai
+npm install
+npm run build
 ```
 
 - CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします。なお<account id>はアカウント ID に置換してください。
