@@ -1,6 +1,8 @@
 # ローカル開発
 
-## バックエンド
+## 準備
+
+### バックエンド
 
 - [デプロイ手順](./deploy.md)を参考にデプロイ
 - 環境変数のセット
@@ -18,15 +20,13 @@ export BEDROCK_REGION=us-west-2
 export BEDROCK_AGENT_REGION=ap-northeast-1
 ```
 
-- Nest.js の起動
+### フロントエンド
 
-```
-cd backend/api
-npm ci
-npm run start:dev
-```
+- フロントエンドディレクトリに移動
 
-## フロントエンド
+```sh
+cd frontend
+```
 
 - [.env.template](../frontend/src/.env.template)を同ディレクトリにコピー、`.env`にリネーム
 - `.env`を開き項目を埋める
@@ -39,10 +39,10 @@ VITE_APP_CHIME_BACKEND="https://xxxxx.appsync-api.ap-northeast-1.amazonaws.com/g
 VITE_APP_ALERT_API_ENDPOINT="http://localhost:3000/api"
 ```
 
-- React の起動
+## ローカル環境の立ち上げ
 
-```
-cd frontend
-npm ci
+プロジェクトのルートディレクトリで下記を実行
+
+```sh
 npm run dev
 ```

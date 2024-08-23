@@ -4,7 +4,6 @@
   "description": "",
   "main": "handler.ts",
   "scripts": {
-    "preinstall": "npm run build --prefix ../common",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

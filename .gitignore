@@ -3,3 +3,5 @@
 *.pem.*
 dist
 build
+.turbo
+node_modules
