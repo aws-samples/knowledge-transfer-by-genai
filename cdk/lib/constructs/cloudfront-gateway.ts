@@ -141,12 +141,12 @@ export class CloudFrontGateway extends Construct {
     this.lambdaOac = lambdaOac;
     this.urlParameter = urlParameter;
 
-    NagSuppressions.addResourceSuppressions(distribution, [
-      {
-        id: "AwsPrototyping-CloudFrontDistributionGeoRestrictions",
-        reason: "this asset is being used all over the world",
-      },
-    ]);
+    // NagSuppressions.addResourceSuppressions(distribution, [
+    //   {
+    //     id: "AwsPrototyping-CloudFrontDistributionGeoRestrictions",
+    //     reason: "this asset is being used all over the world",
+    //   },
+    // ]);
   }
 
   addBucket(bucket: IBucket, path: string, auth: Auth) {
