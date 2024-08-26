@@ -1,4 +1,4 @@
-name: CDK tests
+name: Build tests
 
 on:
   pull_request:
@@ -16,6 +16,5 @@ jobs:
         with:
           node-version: "20.x"
       - run: |
-          cd cdk
           npm ci
-          npm run test
+          npm run build

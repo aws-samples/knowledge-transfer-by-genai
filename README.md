@@ -81,6 +81,10 @@
 - [デモを動かす](./docs/run_demo.md)
 - [ローカル開発](./docs/dev_local.md)
 
-## License
+## ライセンス
 
-This library is licensed under the MIT-0 License. See [the LICENSE file](./LICENSE).
+このサンプルはMIT-0ライセンスのもとで提供されます。詳細は[ライセンスファイル](./LICENSE)をご確認ください。
+
+## コントリビューション
+
+[こちら](./CONTRIBUTING.md)をご覧ください。
