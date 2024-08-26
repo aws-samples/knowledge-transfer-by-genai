@@ -1,5 +1,26 @@
 # デプロイ手順
 
+## 生成AIモデルの有効化
+
+生成AIモデルの有効化をマネージメントコンソール (以降マネコン) から行います。埋め込みモデル (Titan Embed Text v1)およびチャット応答モデル (Claude 3)の2種類のモデルを有効化する必要があります。
+
+### 埋め込みモデル (Titan Embed Text v1)
+
+マネコンから本サンプルのデプロイ先のリージョン (たとえばap-northeast-1など) > `Bedrock` > モデルアクセスをクリックし、Titan Embedding G1 - Textを有効化します。
+
+![](./imgs/run_demo/model_access_2.png)
+
+### チャット応答モデル (Claude 3)
+
+続いて、マネコンからチャット応答モデルのリージョン (デフォルトではus-west-2) > `Bedrock` > モデルアクセスから、Claude3モデルを有効化します。
+
+![](./imgs/run_demo/model_access_1.png)
+
+> [!Important]
+> チャット応答モデルのリージョンをus-west-2ではなく変更したい場合は、[cdk.json](../cdk/cdk.json)の`bedrockRegion`を変更します。詳しくは後述の「CDKでデプロイする」をご覧ください。
+
+## CDKでデプロイする
+
 - お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[AWS EC2 Setup for Prototyping](https://github.com/aws-samples/ec2-setup-for-prototyping)がご利用可能です (SSHログインしご利用ください)。
 - このリポジトリをクローンします
 
@@ -22,7 +43,7 @@ npm install
 npm run build
 ```
 
-- CDK デプロイ前に、us-east-1リージョン、およびデプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョン (ap-northeast-1) へデプロイするものとします。なお<account id>はアカウント ID に置換してください。
+- CDK デプロイ前に、us-east-1リージョン、およびデプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョン (ap-northeast-1) へデプロイするものとします。なお\<account id\>はデプロイ先のアカウント ID に置換してください。
 
 ```sh
 cd cdk
@@ -32,7 +53,7 @@ cdk bootstrap aws://<account id>/ap-northeast-1
 
 - 必要に応じて[cdk.json](../cdk/cdk.json)の下記項目を編集します
 
-  - `bedrockRegion`: Bedrock が利用できるリージョン
+  - `bedrockRegion`: チャット応答モデルを利用するリージョン (デフォルト: us-west-2)
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: 許可する IP アドレス範囲の指定
 
 - プロジェクトをデプロイします。環境にもよりますが、20 分ほどかかります。

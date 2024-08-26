@@ -16,7 +16,7 @@
 
 ![](./imgs/run_demo/dashboard.png)
 
-なお、アラートの情報は[Alert 型](../backend/common/src/@types/alert.ts)で DynamoDB に管理されています。別途 DynamoDB に取り込むしくみを作成することで、より実際に即したデモが可能です。
+なお、アラートの情報は[Alert 型](../backend/common/src/@types/alert.ts)で DynamoDB に管理されています。別途 DynamoDB に取り込むしくみを作成することで、より実際に即したデモが可能です。また、ダミーのアラートは[こちらのファイル](../backend/api/src/alert/alert.service.ts)の`createDummyAlert`にて作成しています。修正しデプロイ (具体的には`cdk deploy`) することで、任意のダミーアラートを作成することができます。
 
 #### （例）製造業の場合
 
