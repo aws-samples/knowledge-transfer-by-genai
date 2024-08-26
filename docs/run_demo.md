@@ -18,7 +18,9 @@
 
 なお、アラートの情報は[Alert 型](../backend/common/src/@types/alert.ts)で DynamoDB に管理されています。別途 DynamoDB に取り込むしくみを作成することで、より実際に即したデモが可能です。
 
-各業界のユースケース例: Comming soon
+#### （例）製造業の場合
+
+生産ラインの異常検知や機器の故障対応に対応したアラートを作成するには、たとえば[AWS IoT Core](https://aws.amazon.com/jp/iot-core/)がご利用できます。詳しくは[チュートリアル](https://docs.aws.amazon.com/ja_jp/iot/latest/developerguide/iot-ddb-rule.html)や[IoT Coreハンズオン](https://catalog.us-east-1.prod.workshops.aws/workshops/b3e0b830-79b8-4c1d-8a4c-e10406600035/ja-JP)を参照ください。
 
 ### (Optional) 既存の知見のアップロード
 
@@ -28,6 +30,12 @@
 - マネコンから`Amazon Bedrock` > `ナレッジベース`にアクセスし、説明に「Industrial Knowledge Transfer By GenAI」と記載されたナレッジベースにアクセスします (名称は`
 KBKnowledgeTrKnowledgeXXXXX`)。
 - `データソース`> `knowledgetransferstack-s3bucketsknowledgebucketxxxx`を選択し、「同期」をクリックします。同期が完了すると OpenSearch にドキュメントが取り込まれます。
+
+#### (例) 製造業の場合
+
+既知の知見のサンプルとして[不具合報告シート](../sample/manufacturing/不具合報告シート/)がご利用いただけます。
+
+![](./imgs/run_demo/manufacturing_ref_sample.png)
 
 ## チャットとビデオ通話
 
