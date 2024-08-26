@@ -22,10 +22,11 @@ npm install
 npm run build
 ```
 
-- CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします。なお<account id>はアカウント ID に置換してください。
+- CDK デプロイ前に、us-east-1リージョン、およびデプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョン (ap-northeast-1) へデプロイするものとします。なお<account id>はアカウント ID に置換してください。
 
 ```sh
 cd cdk
+cdk bootstrap aws://<account id>/us-east-1
 cdk bootstrap aws://<account id>/ap-northeast-1
 ```
 
@@ -58,3 +59,14 @@ arn:aws:cloudformation:ap-northeast-1:1234:stack/KnowledgeTransferStack/yyyy
 ```
 
 以上でデプロイ手順の解説を終えます。続いて[デモを動かす](./run_demo.md)へお進みください。
+
+## トラブルシューティング
+
+### CDK deploy
+
+デプロイコマンドで[UsEast1Stack](../cdk/lib/us-east-1-stack.ts)および[KnowledgeTransferStack](../cdk/lib/knowledge-transfer-stack.ts)の2つのスタックがデプロイされますが、`KnowledgeTransferStack`はus-east-1「**以外**」のリージョンにデプロイする必要があります。デプロイ時に下記のエラー内容が表示された場合はデプロイ先のリージョンがus-east-1「**以外**」であることを確認ください。
+
+```
+CrossRegionEventRuleXXXX
+Resource handler returned message: "Source EventBus and Target EventBus must not be the same.
+```
