@@ -1,4 +1,4 @@
-name: CDK tests
+name: Build and tests
 
 on:
   pull_request:
@@ -15,7 +15,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-      - run: |
+      - name: Install dependencies
+        run: |
           npm ci
+      - name: Build
+        run: |
+          npm run build
+      - name: Test CDK
+        run: |
           cd cdk
           npm run test
