@@ -12,14 +12,8 @@ const useChatApi = () => {
         keepPreviousData: true,
       });
     },
-    getReferenceDocumentUrl: (
-      bucket: string,
-      meetingId: string,
-      fileName: string
-    ) => {
-      return http.get<string>(
-        `chat/reference/${bucket}/${meetingId}/${fileName}`
-      );
+    getReferenceDocumentUrl: (bucket: string, key: string) => {
+      return http.get<string>(`chat/reference/${bucket}/${key}`);
     },
     mutateConversation: (
       alertId: string,

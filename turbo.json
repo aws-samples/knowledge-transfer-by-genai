@@ -13,7 +13,19 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "ACCOUNT_ID",
+        "REGION",
+        "ALERT_TABLE_NAME",
+        "MEETING_TABLE_NAME",
+        "CONCATENATED_BUCKET_NAME",
+        "TRANSCRIPTION_BUCKET_NAME",
+        "KNOWLEDGE_BUCKET_NAME",
+        "KNOWLEDGE_BASE_ID",
+        "BEDROCK_REGION",
+        "BEDROCK_AGENT_REGION"
+      ]
     }
   }
 }

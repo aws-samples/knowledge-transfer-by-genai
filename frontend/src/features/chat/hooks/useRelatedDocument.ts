@@ -4,58 +4,28 @@ import { UsedChunkWithLink, UsedChunk } from "@/types/chat";
 const useRelatedDocument = () => {
   const chatApi = useChatApi();
 
-  // const extractBucketAndKey = useCallback((url: string) => {
-  //   const s3Pattern = /^s3:\/\/([^\/]+)\/([^\/]+)\/(.+)$/;
-  //   const match = url.match(s3Pattern);
-  //   if (match && match.length === 4) {
-  //     return {
-  //       bucketName: match[1],
-  //       meetingId: match[2],
-  //       fileName: match[3],
-  //     };
-  //   }
-  //   return { bucketName: "", meetingId: "", fileName: "" };
-  // }, []);
+  const extractMeetingId = (url: string): string | null => {
+    // If the URI is meeting file, extract the meeting ID from the URI
+    // e.g. s3://bucket-name/meeting-id.mp4-summary.txt
+    const { key } = _extractBucketAndKey(url);
+    const meetingPattern = /^([a-f0-9-]+)\/.*\.mp4-summary\.txt$/;
+    const match = key.match(meetingPattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+    return null;
+  };
 
-  // const getRelatedDocumentsWithLinks = useCallback(
-  //   (relatedDocuments?: UsedChunk[]) => {
-  //     const relatedDocumentsWithLinks: UsedChunkWithLink[] = [];
-
-  //     if (relatedDocuments) {
-  //       relatedDocuments.forEach((doc) => {
-  //         const { bucketName, meetingId, fileName } = extractBucketAndKey(
-  //           doc.source
-  //         );
-  //         const { data } = chatApi.getReferenceDocumentUrl(
-  //           bucketName,
-  //           meetingId,
-  //           fileName
-  //         );
-  //         if (data) {
-  //           relatedDocumentsWithLinks.push({
-  //             ...doc,
-  //             link: data,
-  //           });
-  //         }
-  //       });
-  //     }
-
-  //     return relatedDocumentsWithLinks;
-  //   },
-  //   [chatApi, extractBucketAndKey]
-  // );
-
-  const extractBucketAndKey = (url: string) => {
-    const s3Pattern = /^s3:\/\/([^\/]+)\/([^\/]+)\/(.+)$/;
+  const _extractBucketAndKey = (url: string) => {
+    const s3Pattern = /^s3:\/\/([^\/]+)\/(.+)$/;
     const match = url.match(s3Pattern);
-    if (match && match.length === 4) {
+    if (match && match.length === 3) {
       return {
         bucketName: match[1],
-        meetingId: match[2],
-        fileName: match[3],
+        key: match[2],
       };
     }
-    return { bucketName: "", meetingId: "", fileName: "" };
+    return { bucketName: "", key: "" };
   };
 
   const getRelatedDocumentsWithLinks = (relatedDocuments?: UsedChunk[]) => {
@@ -63,13 +33,11 @@ const useRelatedDocument = () => {
 
     if (relatedDocuments) {
       relatedDocuments.forEach((doc) => {
-        const { bucketName, meetingId, fileName } = extractBucketAndKey(
-          doc.source
-        );
+        const { bucketName, key } = _extractBucketAndKey(doc.source);
+        const encodedKey = encodeURIComponent(key);
         const { data } = chatApi.getReferenceDocumentUrl(
           bucketName,
-          meetingId,
-          fileName
+          encodedKey
         );
         if (data) {
           relatedDocumentsWithLinks.push({
@@ -83,7 +51,7 @@ const useRelatedDocument = () => {
     return relatedDocumentsWithLinks;
   };
   return {
-    extractBucketAndKey,
+    extractMeetingId,
     getRelatedDocumentsWithLinks,
   };
 };

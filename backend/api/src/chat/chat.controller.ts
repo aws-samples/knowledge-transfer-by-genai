@@ -1,7 +1,6 @@
 import { Controller, Post, Body, Sse, Param, Get, Res } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { PostMessageRequest } from "@industrial-knowledge-transfer-by-genai/common";
-import { Observable } from "rxjs";
 import { Response } from "express";
 
 @Controller("chat")
@@ -34,13 +33,23 @@ export class ChatController {
     return this.chatService.getConversationByAlertId(alertId);
   }
 
-  @Get("/reference/:bucket/:meetingId/:fileName")
+  // @Get("/reference/:bucket/:meetingId/:fileName")
+  // async getReferenceDocumentUrl(
+  //   @Param("bucket") bucket: string,
+  //   @Param("meetingId") meetingId: string,
+  //   @Param("fileName") fileName: string
+  // ): Promise<string> {
+  //   const key = `${meetingId}/${fileName}`;
+  //   return await this.chatService.issueReferenceDocumentUrl(bucket, key);
+  // }
+  @Get("/reference/:bucket/:key")
   async getReferenceDocumentUrl(
     @Param("bucket") bucket: string,
-    @Param("meetingId") meetingId: string,
-    @Param("fileName") fileName: string
+    @Param("key") key: string
   ): Promise<string> {
-    const key = `${meetingId}/${fileName}`;
-    return await this.chatService.issueReferenceDocumentUrl(bucket, key);
+    console.log(`bucket: ${bucket}, key: ${key}`);
+    const decodedKey = decodeURIComponent(key);
+    console.log(`decodedKey: ${decodedKey}`);
+    return await this.chatService.issueReferenceDocumentUrl(bucket, decodedKey);
   }
 }

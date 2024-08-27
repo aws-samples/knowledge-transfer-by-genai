@@ -19,13 +19,8 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Observable, Subject } from "rxjs";
 import { buildSystemPrompt } from "./prompt";
 
-const {
-  KNOWLEDGE_BASE_ID,
-  BEDROCK_REGION,
-  BEDROCK_AGENT_REGION,
-  REGION,
-  KNOWLEDGE_BUCKET_NAME,
-} = process.env;
+const { KNOWLEDGE_BASE_ID, BEDROCK_REGION, BEDROCK_AGENT_REGION, REGION } =
+  process.env;
 
 const INFERENCE_CONFIG = {
   maxTokens: 512,
@@ -69,6 +64,13 @@ export class ChatService {
           .send(retrieveCommand)
           .then((retrieveResponse) => {
             const relatedDocuments = retrieveResponse.retrievalResults;
+            console.log(`Related documents: ${relatedDocuments.length}`);
+            console.log(
+              `Preview of the first document: ${relatedDocuments[0].content.text}`
+            );
+            console.log(
+              `Full content of the first document: ${JSON.stringify(relatedDocuments[0])}`
+            );
 
             const command = new ConverseStreamCommand({
               modelId: postMessageRequest.message.model,

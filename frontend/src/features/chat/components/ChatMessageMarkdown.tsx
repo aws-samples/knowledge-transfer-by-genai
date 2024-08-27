@@ -47,14 +47,17 @@ const RelatedDocumentLink: React.FC<{
   const { t } = useTranslation();
   const { isOpenReference, setIsOpenReference } = useMarkdownState();
   const { getMeeting } = useMeeting(props.alertId);
-  const { extractBucketAndKey } = useRelatedDocument();
+  const { extractMeetingId } = useRelatedDocument();
 
   const url = props.relatedDocument?.source;
 
   let meeting;
   if (url) {
-    const { meeting: data } = getMeeting(extractBucketAndKey(url).meetingId);
-    meeting = data;
+    const meetingId = extractMeetingId(url);
+    if (meetingId) {
+      const { meeting: data } = getMeeting(meetingId);
+      meeting = data;
+    }
   }
 
   const linkUrl = useMemo(() => {
@@ -115,15 +118,17 @@ const RelatedDocumentLink: React.FC<{
               >
                 {linkUrl}
               </span>
-              <div className="my-1">
-                {t("alertDetail.chat.referenceVideo")}:
-              </div>
               {meeting && (
-                <MeetingVideoDialog
-                  meeting={meeting}
-                  alertId={props.alertId}
-                  inverted
-                />
+                <>
+                  <div className="my-1">
+                    {t("alertDetail.chat.referenceVideo")}:
+                  </div>
+                  <MeetingVideoDialog
+                    meeting={meeting}
+                    alertId={props.alertId}
+                    inverted
+                  />
+                </>
               )}
             </div>
           </span>

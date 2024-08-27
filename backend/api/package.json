@@ -26,6 +26,7 @@
     "@aws-sdk/s3-request-presigner": "^3.633.0",
     "@industrial-knowledge-transfer-by-genai/common": "file:../common",
     "@nestjs/common": "^10.0.0",
+    "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "reflect-metadata": "^0.2.0",

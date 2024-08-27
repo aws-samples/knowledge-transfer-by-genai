@@ -31,6 +31,9 @@
 KBKnowledgeTrKnowledgeXXXXX`)。
 - `データソース`> `knowledgetransferstack-s3bucketsknowledgebucketxxxx`を選択し、「同期」をクリックします。同期が完了すると OpenSearch にドキュメントが取り込まれます。
 
+> [!Important]
+> ファイル名はUTF-8エンコードされている必要があります。日本語ではなく英数字で命名することをおすすめします。
+
 #### (例) 製造業の場合
 
 既知の知見のサンプルとして[不具合報告シート](../sample/manufacturing/不具合報告シート/)がご利用いただけます。
@@ -79,3 +82,44 @@ KBKnowledgeTrKnowledgeXXXXX`)。
 > 要約が完了してから KnowledgeBase への取り込みが行われるため、すぐには反映されていない可能性があります。もし 1 回目と同様「検索結果に見つからないため回答できません」などの文言が返された場合、数分待ってから再度お試しください。
 
 ![](./imgs/run_demo/citation.png)
+
+## トラブルシューティング
+
+### チャットにテキストを入力しても出力が得られず固まる
+
+モデルアクセスを有効化しているかご確認ください。詳しくは[デプロイ手順](./deploy.md#生成AIモデルの有効化)を参照してください。
+
+### 画面を更新するとAccessDeniedエラーが表示される
+
+URLにはルートのみ指定可能です。ルートにアクセスください。
+
+- OK: `https://xxxxx.cloudfront.net`
+- NG: `https://xxxxx.cloudfront.net/alert/xxx-yyy-zzz`
+
+```xml
+This XML file does not appear to have any style information associated with it. The document tree is shown below.
+<Error>
+<Code>AccessDenied</Code>
+<Message>Access Denied</Message>
+<RequestId>XXXXX</RequestId>
+<HostId>...</HostId>
+</Error>
+```
+
+### 参考リンクを開くとInvalidArgumentエラーが表示される
+
+下記のエラーが表示される場合、KnowledgeBaseに取り込んだファイル名がUTF-8エンコードされていることを確認してください。
+
+```xml
+<Error>
+<script/>
+<Code>InvalidArgument</Code>
+<Message>Header value cannot be represented using ISO-8859-1.</Message>
+<ArgumentName>response-content-disposition</ArgumentName>
+<ArgumentValue>attachment; filename="ほげほげ.xlsx"</ArgumentValue>
+<RequestId>XXXXXX</RequestId>
+<HostId>...</HostId>
+</Error>
+```
+
+###
