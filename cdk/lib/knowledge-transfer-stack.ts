@@ -10,6 +10,7 @@ import { Knowledge } from "./constructs/knowledge";
 import { CloudFrontGateway } from "./constructs/cloudfront-gateway";
 import { UsEast1Stack } from "./us-east-1-stack";
 import { FunctionUrlAuthType, InvokeMode } from "aws-cdk-lib/aws-lambda";
+import { ChunkingStrategy } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/bedrock";
 
 export type BedrockModelId =
   | "anthropic.claude-v2:1"
@@ -49,6 +50,9 @@ export class KnowledgeTransferStack extends cdk.Stack {
     // Knowledge Base
     const knowledge = new Knowledge(this, "Knowledge", {
       knowledgeBucket: buckets.knowledgeBucket,
+      chunkingStrategy: ChunkingStrategy.FIXED_SIZE,
+      maxTokens: 1000,
+      overlapPercentage: 30,
     });
 
     // Alert / Video management Api
