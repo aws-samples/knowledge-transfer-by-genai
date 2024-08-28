@@ -25,7 +25,7 @@
 - このリポジトリをクローンします
 
 ```sh
-git clone https://github.com/aws-samples/industrial-knowledge-transfer-by-genai
+git clone https://github.com/aws-samples/knowledge-transfer-by-genai
 ```
 
 - [esbuild](https://esbuild.github.io/)、[AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
@@ -38,7 +38,7 @@ npm i -g aws-cdk
 - プロジェクトが依存する npm パッケージをインストール後、ビルドします
 
 ```sh
-cd industrial-knowledge-transfer-by-genai
+cd knowledge-transfer-by-genai
 npm install
 npm run build
 ```
