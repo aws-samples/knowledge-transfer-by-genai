@@ -27,7 +27,7 @@
     "amazon-chime-sdk-component-library-react": "^3.8.0",
     "amazon-chime-sdk-js": "^3.23.0",
     "aws-amplify": "^6.4.3",
-    "axios": "^1.7.3",
+    "axios": "^1.7.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^0.2.1",
