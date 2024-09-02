@@ -1,4 +1,4 @@
-import { Alert } from "@types/industrial-knowledge-transfer-by-genai";
+import { Alert } from "@/types/alert";
 
 export type DashboardAlert = Alert & {
   severityColor: string;
