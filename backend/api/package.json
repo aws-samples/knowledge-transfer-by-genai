@@ -27,7 +27,7 @@
     "@industrial-knowledge-transfer-by-genai/common": "file:../common",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",
-    "@nestjs/core": "^10.0.0",
+    "@nestjs/core": "^10.4.5",
     "@nestjs/platform-express": "^10.4.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
