@@ -28,6 +28,11 @@ const INFERENCE_CONFIG = {
   topP: 0.9,
 };
 
+const INFERENCE_CONFIG_CLAUDE_4_5 = {
+  maxTokens: 512,
+  temperature: 0.5,
+};
+
 @Injectable()
 export class ChatService {
   private bedrockClient: BedrockRuntimeClient;
@@ -75,6 +80,10 @@ export class ChatService {
               );
             }
 
+            const isClaude45 = postMessageRequest.message.model.includes('claude-4-5') || 
+                               postMessageRequest.message.model.includes('claude-haiku-4-5') ||
+                               postMessageRequest.message.model.includes('claude-sonnet-4-5');
+
             const command = new ConverseStreamCommand({
               modelId: postMessageRequest.message.model,
               messages: conversation.messages.map((msg) => ({
@@ -83,7 +92,7 @@ export class ChatService {
                   text: content.body,
                 })),
               })),
-              inferenceConfig: INFERENCE_CONFIG,
+              inferenceConfig: isClaude45 ? INFERENCE_CONFIG_CLAUDE_4_5 : INFERENCE_CONFIG,
               system: [
                 {
                   text: buildSystemPrompt(relatedDocuments),

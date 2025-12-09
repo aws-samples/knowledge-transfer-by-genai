@@ -23,8 +23,18 @@ const availableModels: {
     supportMediaType: ["image/jpeg", "image/png", "image/gif", "image/webp"],
   },
   {
-    modelId: "anthropic.claude-3-7-sonnet-20250219-v1:0",
+    modelId: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     label: "Claude 3.7 (Sonnet)",
+    supportMediaType: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+  },
+  {
+    modelId: "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+    label: "Claude 4.5 (Haiku)",
+    supportMediaType: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+  },
+  {
+    modelId: "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    label: "Claude 4.5 (Sonnet)",
     supportMediaType: ["image/jpeg", "image/png", "image/gif", "image/webp"],
   },
 ];
