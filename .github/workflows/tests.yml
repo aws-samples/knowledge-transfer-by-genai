@@ -59,15 +59,8 @@ jobs:
         with:
           node-version: "20.x"
 
-      - name: Install backend dependencies
-        run: |
-          cd backend/api && npm ci
-          cd ../video-call && npm ci
-          cd ../video-summary-generator && npm ci
-
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: npm ci
+      - name: Build all packages
+        run: npm run build
 
       - name: Install CDK dependencies
         working-directory: ./cdk
