@@ -65,4 +65,4 @@ jobs:
 
       - name: CDK Synth
         working-directory: ./cdk
-        run: npm run synth
+        run: npx cdk synth
